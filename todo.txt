@@ -1,0 +1,5 @@
+- Palladin Auto
+- Troops
+- Pause / Resume
+- Disconnect checks
+- Cancel building queue

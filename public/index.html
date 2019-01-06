@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+    <title>Stämme Huuck</title>
+    <script src="/bundle.js"></script>
+</head>
+
+<body>
+
+    <script>
+        function addQueue(event) {
+            socket.emit('add queue', event.querySelector('input').value);
+            event.querySelector('input').value = "";
+            return false;
+        }
+    </script>
+    <div class="title">Status</div>
+    <table id="status">
+        <tr>
+            <th>name</th>
+            <th>value</th>
+        </tr>
+        <tr>
+            <td>booted</td>
+            <td data-name="booted"></td>
+        </tr>
+        <tr>
+            <td>started</td>
+            <td data-name="started"></td>
+        </tr>
+        <tr>
+            <td>paused</td>
+            <td data-name="paused"></td>
+        </tr>
+        <tr>
+            <td>socket</td>
+            <td data-name="socket"></td>
+        </tr>
+    </table>
+    <hr>
+    <div class="title">Controlls</div>
+    <table>
+        <tr>
+            <td>
+                <form action="/addqueue" method="POST" onsubmit="return addQueue(this)">
+                    <input type="text" name="queue" placeholder="Add to queue">
+                    <button type="submit">Add</button>
+                </form>
+            </td>
+            <td><button onclick="socket.emit('clear queue')">Clear Queue</button></td>
+            <td><button onclick="socket.emit('force check')">Force Tick Check</button></td>
+            <td><button onclick="$('#logs').empty() && socket.emit('clear logs')">Clear Logs</button></td>
+            <td><button onclick="socket.emit('pause server'); this.disabled = true;" id="pause_button">Pause</button></td>
+            <td><button onclick="confirm('sicher?') && socket.emit('restart')">Restart Script</button></td>
+            <td><button onclick="confirm('sicher (kill) ?') && socket.emit('kill')">Kill Server</button></td>
+        </tr>
+    </table>
+    <hr>
+    <div class="title">Recourses</div>
+    <table>
+        <tr>
+            <th>wood</th>
+            <th>stone</th>
+            <th>iron</th>
+        </tr>
+        <tr>
+            <td id="wood"></td>
+            <td id="stone"></td>
+            <td id="iron"></td>
+        </tr>
+    </table>
+    <hr>
+    <style>
+        .tbl {
+            width: 100%;
+        }
+
+        table tr td,
+        table tr th {
+            padding: 5px 8px;
+            border: 1px solid black;
+        }
+    </style>
+    <div class="title">Actions</div>
+    <table class="tbl">
+        <tr>
+            <th>last tick</th>
+            <th>last action</th>
+            <th>next action</th>
+            <th>next action time</th>
+        </tr>
+        <tr>
+            <td id="last_tick"></td>
+            <td id="last_action"></td>
+            <td id="next_action"></td>
+            <td id="next_action_time"></td>
+        </tr>
+    </table>
+    <hr>
+    <div class="title">Manual Queue</div>
+    <ul id="queue"></ul>
+    <hr>
+    <div class="title">Bulding Queue</div>
+    <ul id="building"></ul>
+    <hr>
+    <div class="title">Buildings</div>
+    <table id="levels"></table>
+    <hr>
+    <div class="title">Logs</div>
+    <ul id="logs"></ul>
+</body>
+
+</html>
