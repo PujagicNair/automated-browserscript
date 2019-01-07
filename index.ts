@@ -103,7 +103,7 @@ app.get('/fguck', function(_, res) {
 
 app.use(express.static(join(__dirname, 'public')));
 
-http.listen(80);
+http.listen(3000);
 
 // create reactor vars
 ((root: any) => {
@@ -137,8 +137,8 @@ async function start() {
         writeFile('✔ Opened Page');
         // login
         await tab.evaluate(function() {
-            document.getElementById('user').value = config.username;
-            document.getElementById('password').value = config.password;
+            document.getElementById('user').value = "AboIsSoGood";
+            document.getElementById('password').value = "Qay123456";
             document.querySelector('a.btn-login').click();
         });
         writeFile('✔ Logged in');

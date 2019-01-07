@@ -45,11 +45,11 @@ io.on('connect', socket => {
     io.to(socket.id).emit('building', building);
     io.to(socket.id).emit('levels', levels);
     io.to(socket.id).emit('logs', fs.readFileSync('out.txt').toString().split('\n'));
-    io.to(socket.id).emit('var changed', 'started', isStarted || 'false');
-    io.to(socket.id).emit('var changed', 'paused', isPaused || 'false');
-    io.to(socket.id).emit('var changed', 'booted', isBooted || 'false');
+    io.to(socket.id).emit('var changed', 'started', isStarted || false);
+    io.to(socket.id).emit('var changed', 'paused', isPaused || false);
+    io.to(socket.id).emit('var changed', 'booted', isBooted || false);
     io.to(socket.id).emit('var changed', 'socket', true);
-    if ((socket.handshake.headers.cookie || '').indexOf('verified=true') != -1) {
+    if ((socket.handshake.headers.cookie || '').indexOf('houngoungagne=775672341') != -1) {
         socket.on('add queue', (str) => {
             queue.push(str);
             forceCheck = true;
@@ -82,6 +82,18 @@ io.on('connect', socket => {
             yield http.close();
             yield process.exit(0);
         }));
+        socket.on('pause server', () => __awaiter(this, void 0, void 0, function* () {
+            isPaused = !isPaused;
+            if (isPaused) {
+                yield kill();
+                writeFile('[paused script]');
+            }
+            else {
+                writeFile('[resumed script]');
+                yield start();
+            }
+            io.emit('var changed', 'paused', isPaused);
+        }));
     }
     else {
         io.to(socket.id).emit('error', 'Access to controlls denied, readonly mode');
@@ -90,14 +102,18 @@ io.on('connect', socket => {
 // api
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.get('/fguck', function (_, res) {
+    res.cookie('houngoungagne', '775672341');
+    return res.redirect('/');
+});
 app.use(express_1.default.static(path_1.join(__dirname, 'public')));
 http.listen(80);
 // create reactor vars
 ((root) => {
     let _isPaused = false, _isStarted = false, _isBooted = false;
-    Object.defineProperty(root, 'isPaused', { get() { return _isPaused; }, set(v) { _isPaused = v; io.emit('var changed', 'paused', v || 'false'); } });
-    Object.defineProperty(root, 'isStarted', { get() { return _isStarted; }, set(v) { _isStarted = v; io.emit('var changed', 'started', v || 'false'); } });
-    Object.defineProperty(root, 'isBooted', { get() { return _isBooted; }, set(v) { _isBooted = v; io.emit('var changed', 'booted', v || 'false'); } });
+    Object.defineProperty(root, 'isPaused', { get() { return _isPaused; }, set(v) { _isPaused = v; io.emit('var changed', 'paused', v || false); } });
+    Object.defineProperty(root, 'isStarted', { get() { return _isStarted; }, set(v) { _isStarted = v; io.emit('var changed', 'started', v || false); } });
+    Object.defineProperty(root, 'isBooted', { get() { return _isBooted; }, set(v) { _isBooted = v; io.emit('var changed', 'booted', v || false); } });
 })(global);
 let forceCheck = false;
 function start() {
@@ -120,8 +136,8 @@ function start() {
             writeFile('✔ Opened Page');
             // login
             yield tab.evaluate(function () {
-                document.getElementById('user').value = 'AboIsSoGood';
-                document.getElementById('password').value = 'Qay123456';
+                document.getElementById('user').value = "AboIsSoGood";
+                document.getElementById('password').value = "Qay123456";
                 document.querySelector('a.btn-login').click();
             });
             writeFile('✔ Logged in');
@@ -147,15 +163,18 @@ function start() {
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         // handle
-        let nextCheck = 0;
+        let nextCheck = 0, lastReason;
         function tick() {
             return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
-                if (!isStarted) {
+                if (!isStarted && !isPaused) {
                     yield start();
                 }
                 else if (isStarted && !isBooted) {
                     writeFile('tick triggered without booted server');
-                    yield sleep(5000);
+                    return resolve();
+                }
+                else if (isPaused) {
+                    return resolve();
                 }
                 recources = yield get_recources_1.default(tab);
                 levels = yield levels_of_1.default(tab);
@@ -172,6 +191,10 @@ function run() {
                         io.emit('queue', queue);
                     }
                     writeFile(checked.reason);
+                    if (checked.reason == lastReason) {
+                        writeFile('same reason twice ???');
+                    }
+                    lastReason = checked.reason;
                     io.emit('next check', checked.nextTime);
                 }
                 return resolve();
@@ -181,7 +204,7 @@ function run() {
         (() => __awaiter(this, void 0, void 0, function* () {
             while (true) {
                 yield tick();
-                yield sleep(10000);
+                yield sleep(25000);
             }
         }))();
     });

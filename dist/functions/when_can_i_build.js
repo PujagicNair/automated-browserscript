@@ -7,7 +7,6 @@ function whenCanIBuild(tab) {
         for (var i = 0; i < hr.length; i++) {
             if (hr[i].querySelector('.inactive:not([colspan])')) {
                 var prop = hr[i].id.match(/main_buildrow_(\w+)/)[1];
-                var val = {};
                 var time;
                 var str = hr[i].querySelector('.inactive:not([colspan])').innerHTML;
                 if (str.indexOf('Genug Rohstoffe in') != -1) {
@@ -15,7 +14,7 @@ function whenCanIBuild(tab) {
                     time = Date.now() + off[0] * 60 * 60 * 1000 + off[1] * 60 * 1000 + off[2] * 1000;
                 }
                 else {
-                    var match = str.match(/(heute|morgen)\sum(.+?):(.+?)$/);
+                    var match = str.match(/(heute|morgen)\sum\s(.+?):(.+?)/);
                     var now = new Date();
                     if (match[1] == 'morgen') {
                         now.setDate(now.getDate() + 1);
