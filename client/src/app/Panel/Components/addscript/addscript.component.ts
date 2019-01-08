@@ -7,6 +7,7 @@ interface Step {
   title: string;
   disabled(): boolean;
   data?: any;
+  init?(): void;
 }
 
 @Component({
@@ -19,6 +20,7 @@ export class AddscriptComponent implements OnInit {
   constructor(private http: HttpClient) { }
 
   data: any;
+  userdata: any;
 
   ngOnInit() {
     this.http.get('/api/worlddatas').subscribe(data => {
@@ -32,20 +34,43 @@ export class AddscriptComponent implements OnInit {
     { title: 'Select a server', data: {}, disabled() { return !this.data.server } },
     { title: 'Select a map', data: {}, disabled() { return !this.data.map } },
     { title: 'Settings', data: {}, disabled() { return !this.data.ticks } },
-    { title: 'Plugins', data: {}, disabled() { return false } },
-    { title: 'Connect Account', data: {}, disabled() { return !this.data.username || !this.data.password } },
-    { title: 'Summary', disabled() { return false } }
-  ]
+    { title: 'Plugins', data: { plugins: {} }, disabled() { return false } },
+    { title: 'Connect Account', data: {}, disabled() { return !this.data.username || !this.data.password }, init: () => this.userdata = undefined },
+    { title: 'Summary', data: {}, disabled() { return false }, init: () => {
+      let end = {};
+      this.steps.forEach(step => {
+        if (step.data) {
+          Object.assign(end, step.data);
+        }
+      });
+      this.userdata = end;
+    }}
+  ];
+
+
 
   next() {
     if (this.steps[this.step + 1] && !this.steps[this.step].disabled()) {
       this.step++;
+      if (this.steps[this.step].init) {
+        this.steps[this.step].init();
+      }
     }
+  }
+
+  parseSummary() {
+    let summary = Object.assign({}, this.userdata);
+    summary.password = Array(summary.password.length).fill('*').join('');
+    summary.plugins = Object.keys(summary.plugins).filter(key => summary.plugins[key]).join(', ');
+    return Object.keys(summary).map(key => ({ key, value: summary[key] }));
   }
 
   back() {
     if (this.steps[this.step - 1]) {
       this.step--;
+      if (this.steps[this.step].init) {
+        this.steps[this.step].init();
+      }
     }
   }
 
@@ -65,6 +90,16 @@ export class AddscriptComponent implements OnInit {
     } else {
       return [];
     }
+  }
+
+  get scope() {
+    return this.steps[this.step].data;
+  }
+
+  submit() {
+    this.http.post('/api/create', this.userdata).subscribe((res: any) => {
+
+    });
   }
 
 }
