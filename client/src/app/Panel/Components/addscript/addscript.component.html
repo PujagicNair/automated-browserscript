@@ -1,0 +1,58 @@
+<div *ngIf="data">
+  <!--Name<input type="text"><br>
+  Server <select [(ngModel)]="server" (change)="map = undefined; usedEffects = {}">
+    <option *ngFor="let server of data.servers" [value]="server.key">{{ server.value }}</option>
+  </select><br>
+  Map <select [disabled]="!server" [(ngModel)]="map" (change)="usedEffects = {}">
+    <option *ngFor="let map of maps" [value]="map">{{ map }}</option>
+  </select><br>
+  Effects<br>
+  <div class="effect" *ngFor="let effect of effects">
+    Use: <input type="checkbox" [(ngModel)]="usedEffects[effect.name]"><br>
+    <div class="name">Name: {{ effect.name }}</div>
+    <div class="desc">Desc: {{ effect.description }}</div>
+    <div class="price">Price: {{ effect.price }}</div>
+    <div class="author">Author: {{ effect.author }}</div>
+  </div>-->
+
+  
+  <button (click)="back()">Back</button>
+  <button [disabled]="steps[step].disabled()" (click)="next()">Next</button>
+
+  <div class="title">
+    {{ steps[step].title }}
+  </div>
+
+  <div *ngIf="step == 0">
+  </div>
+  <div *ngIf="step == 1">
+    <select [(ngModel)]="steps[step].data.server">
+      <option *ngFor="let server of data.servers" [value]="server.key">{{ server.value }}</option>
+    </select>
+  </div>
+  <div *ngIf="step == 2">
+    <select [(ngModel)]="steps[step].data.map">
+      <option *ngFor="let map of maps" [value]="map">{{ map }}</option>
+    </select>
+  </div>
+  <div *ngIf="step == 3">
+    <select [(ngModel)]="steps[step].data.ticks">
+      <option *ngFor="let tick of [5, 10, 15, 25, 60]" [value]="tick">{{ tick }}</option>
+    </select>
+  </div>
+  <div *ngIf="step == 4">
+    <div class="effect" *ngFor="let effect of effects">
+      Use: <input type="checkbox" [(ngModel)]="steps[step].data[effect.name]"><br>
+      <div class="name">Name: {{ effect.name }}</div>
+      <div class="desc">Desc: {{ effect.description }}</div>
+      <div class="price">Price: {{ effect.price }}</div>
+      <div class="author">Author: {{ effect.author }}</div>
+    </div>
+  </div>
+  <div *ngIf="step == 5">
+
+  </div>
+  <div *ngIf="step == 6">
+    
+  </div>
+</div>

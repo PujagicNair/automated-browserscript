@@ -1,0 +1,31 @@
+<div class="content">
+
+  <!-- Scripts -->
+  <div class="block">
+    <div class="title">
+      Scripts
+    </div>
+    <div *ngIf="scripts.length == 0">
+      No scripts availble
+    </div>
+    <div class="script" *ngFor="let script of scripts">
+      <div class="name">{{ script.name }} ({{ script.world }})</div>
+      <div class="status">status: {{ script.status }}</div>
+      <div class="price">
+        price: {{ script.price }} coins/h, {{ script.price * 24 }} coins/day
+      </div>
+      <div>Effects</div>
+      <ul class="effects">
+        <li *ngFor="let effect of script.effects">{{ effect }}</li>
+      </ul>
+
+      <div>
+        Settings
+      </div>
+      <ul class="settings">
+        <li class="setting" *ngFor="let setting of script.settings">{{ setting.key }}: {{ setting.value }}</li>
+      </ul>
+    </div>
+    <a routerLink="addscript">Add Script</a>
+  </div>
+</div>
