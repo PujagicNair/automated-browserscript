@@ -26,23 +26,27 @@
   <div *ngIf="step == 0">
   </div>
   <div *ngIf="step == 1">
-    <select [(ngModel)]="steps[step].data.server">
-      <option *ngFor="let server of data.servers" [value]="server.key">{{ server.value }}</option>
-    </select>
+    <div class="input-holder" *ngFor="let server of data.servers">
+        <input type="radio"  [value]="server.key" [id]="'server' + server.key" [(ngModel)]="scope.server">
+        <label [for]="'server' + server.key">{{ server.value }}</label>
+    </div>
   </div>
   <div *ngIf="step == 2">
-    <select [(ngModel)]="steps[step].data.map">
-      <option *ngFor="let map of maps" [value]="map">{{ map }}</option>
-    </select>
+    <div class="input-holder" *ngFor="let map of maps">
+        <input type="radio"  [value]="map" [id]="'map' + map" [(ngModel)]="scope.map">
+        <label [for]="'map' + map">{{ map }}</label>
+    </div>
   </div>
   <div *ngIf="step == 3">
-    <select [(ngModel)]="steps[step].data.ticks">
-      <option *ngFor="let tick of [5, 10, 15, 25, 60]" [value]="tick">{{ tick }}</option>
-    </select>
+    Tick
+    <div class="input-holder" *ngFor="let tick of data.ticks">
+        <input type="radio"  [value]="tick.time" [id]="'tick' + tick.time" [(ngModel)]="scope.ticks">
+        <label [for]="'tick' + tick.time">every {{ tick.time }}s{{ tick.price ? ' (+' + tick.price + '$ per day)' : '' }}</label>
+    </div>
   </div>
   <div *ngIf="step == 4">
     <div class="effect" *ngFor="let effect of effects">
-      Use: <input type="checkbox" [(ngModel)]="steps[step].data[effect.name]"><br>
+      Use: <input type="checkbox" [(ngModel)]="scope.plugins[effect.name]"><br>
       <div class="name">Name: {{ effect.name }}</div>
       <div class="desc">Desc: {{ effect.description }}</div>
       <div class="price">Price: {{ effect.price }}</div>
@@ -50,9 +54,16 @@
     </div>
   </div>
   <div *ngIf="step == 5">
-
+    <input type="text" [(ngModel)]="scope.username">
+    <input type="password" [(ngModel)]="scope.password">
   </div>
   <div *ngIf="step == 6">
-    
+    <table>
+      <tr *ngFor="let sum of parseSummary()">
+        <td>{{ sum.key }}</td>
+        <td>{{ sum.value }}</td>
+      </tr>
+    </table>
+    <button (click)="submit()">Create</button>
   </div>
 </div>

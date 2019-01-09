@@ -17,8 +17,8 @@ export default function createSession(hack: TribalHack): Promise<void> {
 
         // login
         await hack.browser.exec(`function() {
-            document.getElementById('user').value = "${hack.credentials.username}";
-            document.getElementById('password').value = "${hack.credentials.password}";
+            document.getElementById('user').value = "${hack.config.username}";
+            document.getElementById('password').value = "${hack.config.password}";
             document.querySelector('a.btn-login').click();
         }`);
         await sleep(1000);

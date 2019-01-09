@@ -14,12 +14,8 @@ export interface anyElement extends HTMLElement {
     [key : string] : any;
 }
 
-export enum EServer {
-    DE161 = '__de161'
-}
-
 const SERVERS = {
-    [EServer.DE161]: { url: 'https://die-staemme.de/', map: '161' }
+    'de161': { url: 'https://die-staemme.de/', map: '161' }
 }
 
 export class TribalHack {
@@ -29,36 +25,35 @@ export class TribalHack {
     server: { url: string, map: string };
     plugins: string[];
     pluginData: HackPluginData;
+    config;
 
-    constructor(server: EServer, public credentials: Credentials, public output?: (action: string, ...adds: any[]) => void) {
-        this.server = SERVERS[server];
+    private isRunning = false;
+
+    constructor(input, public output?: (action: string, ...adds: any[]) => void) {
+        this.config = input;
+        this.plugins = Object.keys(this.config.plugins).filter(key => this.config.plugins[key]);
+
+        this.server = SERVERS[this.config.server + this.config.map];
+        if (!this.server) {
+            throw new Error('Server or Map invalide');
+        }
         if (!this.output) {
             this.output = (...args) => {};
         }
     }
 
-    setup(browser : Browser) {
-        this.browser = browser;
+    setup() {
         return new Promise(async (resolve, reject) => {
             try {
-                //await createSession(this);
-                await this.loadPlugins();
-                return resolve();
-            } catch (error) {
-                return reject(error);
-            }
-
-        });
-    }
-
-    loadPlugins(): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            try {
+                this.browser = new Browser(this.config.browserOptions);
+                await this.browser.start();
+                await createSession(this);
                 this.pluginData = await loadPlugins(this);
                 return resolve();
             } catch (error) {
                 return reject(error);
             }
+
         });
     }
 
@@ -66,13 +61,21 @@ export class TribalHack {
         return `/game.php?village=${this.villageId}&screen=${target}`
     }
 
-    start() {}
+    start() {
+        this.isRunning = true;
+        /*(async () => {
+            while (true) {
+                //await sleep
+            }
+        })();*/
+    }
 
     tick() {
         return new Promise(async resolve => {
             for (let plugin of this.plugins) {
                 let script = this.pluginData[plugin];
                 await script.run(this, providePluginsFor(this.pluginData, script.meta.requires), {});
+                return resolve();
             }
         });
     }
