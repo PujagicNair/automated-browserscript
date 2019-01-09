@@ -13,11 +13,96 @@
 
 <body>
 
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        iframe {
+            width: 100%;
+            height: 1000px;
+            margin-bottom: 20px;
+        }
+
+        .tbl {
+            width: 100%;
+        }
+
+        table tr td,
+        table tr th {
+            padding: 5px 8px;
+            border: 1px solid black;
+        }
+    </style>
+
+    <button onclick="reloadFrame()">Reload Content</button>
+    <iframe src="/content.html" frameborder="0" id="contentFrame" onload="initFrame()"></iframe>
+    <br><br>
+
     <script>
         function addQueue(event) {
             socket.emit('add queue', event.querySelector('input').value);
             event.querySelector('input').value = "";
             return false;
+        }
+        function clickElem(event) {
+            socket.emit('click', event.querySelector('input').value);
+            event.querySelector('input').value = "";
+            return false;
+        }
+
+        function reloadFrame() {
+            document.getElementById('contentFrame').contentWindow.location.reload();
+        }
+
+        function initFrame() {
+            let w = document.getElementById('contentFrame').contentWindow;
+            w.document.querySelectorAll('[href]').forEach(a => {
+                a.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    if (a.id) {
+                        socket.emit('click', '#' + a.id);
+                    } else {
+                        socket.emit('click', getSelectorForElement(a));
+                    }
+                    
+                    return false;
+                });
+            });
+        }
+
+        function getSelectorForElement (elem) {
+            let path;
+            while (elem) {
+                let subSelector = elem.localName;
+                if (!subSelector) {
+                    break;
+                }
+                subSelector = subSelector.toLowerCase();
+
+                const parent = elem.parentElement;
+
+                if (parent) {
+                    const sameTagSiblings = parent.children;
+                    if (sameTagSiblings.length > 1) {
+                        let nameCount = 0;
+                        const index = [...sameTagSiblings].findIndex((child) => {
+                            if (elem.localName === child.localName) {
+                                nameCount++;
+                            }
+                            return child === elem;
+                        }) + 1;
+                        if (index > 1 && nameCount > 1) {
+                            subSelector += ':nth-child(' + index + ')';
+                        }
+                    }
+                }
+
+                path = subSelector + (path ? '>' + path : '');
+                elem = parent;
+            }
+            return path;
         }
     </script>
     <div class="title">Status</div>
@@ -48,12 +133,19 @@
     <table>
         <tr>
             <td>
-                <form action="/addqueue" method="POST" onsubmit="return addQueue(this)">
+                <form onsubmit="return addQueue(this)">
                     <input type="text" name="queue" placeholder="Add to queue">
                     <button type="submit">Add</button>
                 </form>
             </td>
+            <td>
+                <form onsubmit="return clickElem(this)">
+                    <input type="text" name="selector" placeholder="Selector to Click">
+                    <button type="submit">Click</button>
+                </form>
+            </td>
             <td><button onclick="socket.emit('clear queue')">Clear Queue</button></td>
+            <td><button onclick="socket.emit('screen')">Screen</button></td>
             <td><button onclick="socket.emit('force check')">Force Tick Check</button></td>
             <td><button onclick="$('#logs').empty() && socket.emit('clear logs')">Clear Logs</button></td>
             <td><button onclick="socket.emit('pause server'); this.disabled = true;" id="pause_button">Pause</button></td>
@@ -77,15 +169,7 @@
     </table>
     <hr>
     <style>
-        .tbl {
-            width: 100%;
-        }
 
-        table tr td,
-        table tr th {
-            padding: 5px 8px;
-            border: 1px solid black;
-        }
     </style>
     <div class="title">Actions</div>
     <table class="tbl">
@@ -111,6 +195,12 @@
     <hr>
     <div class="title">Buildings</div>
     <table id="levels"></table>
+    <hr>
+    <div class="title">Screen</div>
+    <img src="" id="screen">
+    <hr>
+    <div class="title">Content</div>
+    
     <hr>
     <div class="title">Logs</div>
     <ul id="logs"></ul>

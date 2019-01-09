@@ -11,7 +11,6 @@ import levelsOf from './functions/levels_of';
 import buildQueue from './functions/build_queue';
 import check from './functions/check';
 import { join } from 'path';
-import config from './config';
 
 // overrwrite document
 declare var document: {
@@ -28,10 +27,10 @@ let io = socketIO(http);
 // create vars
 let queue = [], building = [], levels = [], recources: any = {};
 let sleep = ms => new Promise(r => setTimeout(r, ms));
-let world, village_id = '46771', screen;
+let world, village_id = '4162', screen;
 let browser: chrome.PhantomJS, tab: Webpage;
 
-io.on('connect', socket => {
+io.on('connect', async socket => {
     io.to(socket.id).emit('queue', queue);
     io.to(socket.id).emit('res', recources);
     io.to(socket.id).emit('building', building);
@@ -41,11 +40,11 @@ io.on('connect', socket => {
     io.to(socket.id).emit('var changed', 'paused', isPaused || false);
     io.to(socket.id).emit('var changed', 'booted', isBooted || false);
     io.to(socket.id).emit('var changed', 'socket', true);
+    io.to(socket.id).emit('screen', await tab.renderBase64('jpeg'));
 
-    if ((socket.handshake.headers.cookie || '').indexOf('houngoungagne=775672341') != -1) {
+    if (!0) {
         socket.on('add queue', (str) => {
             queue.push(str);
-            
             forceCheck = true;
             writeFile('[queue added] ' + str);
             io.emit('queue', queue);
@@ -69,6 +68,16 @@ io.on('connect', socket => {
             await kill();
             await sleep(500);
             await start();
+        });
+        socket.on('click', async selector => {
+            await tab.evaluateJavaScript(`function() {
+                document.querySelector("${selector}").click();
+            }`);
+            await sleep(300);
+            io.to(socket.id).emit('reload frame');
+        });
+        socket.on('screen', async () => {
+            io.to(socket.id).emit('screen', await tab.renderBase64('jpeg'));
         });
         socket.on('kill', async () => {
             writeFile('[exiting]');
@@ -101,6 +110,12 @@ app.get('/fguck', function(_, res) {
     return res.redirect('/');
 });
 
+app.get('/content.html', async function(req, res) {
+    let content = await tab.evaluateJavaScript<string>('function() { return document.all[0].innerHTML }');
+    content = content.replace(/<script[.\s\S]+?\/script>/g, '');
+    res.status(200).send(content);
+});
+
 app.use(express.static(join(__dirname, 'public')));
 
 http.listen(3000);
@@ -123,8 +138,13 @@ async function start() {
         isStarted = true;
         writeFile('***Starting Script***');
         // create
-        browser = await chrome.create(['--load-images=no']);
+        browser = await chrome.create(['--load-images=yes']);
         tab = await <any>browser.createPage();
+
+        tab.property('viewportSize', {
+            width: 1003,
+            height: 730
+        });
         // set screen var
         await tab.on('onUrlChanged', function(url) {
             let match = url.match(/screen=(\w+)/);
@@ -137,21 +157,30 @@ async function start() {
         writeFile('✔ Opened Page');
         // login
         await tab.evaluate(function() {
-            document.getElementById('user').value = "AboIsSoGood";
-            document.getElementById('password').value = "Qay123456";
+            document.getElementById('user').value = "MrAboyobam";
+            document.getElementById('password').value = "Elcano11";
             document.querySelector('a.btn-login').click();
         });
         writeFile('✔ Logged in');
         // wait for login to be done
         await sleep(2000);
         // select world
-        world = await tab.evaluate(function() {
-            document.querySelector('a.world-select > span.world_button_active').click();
-            return document.querySelector('a.world-select > span.world_button_active').innerText;
-        });
+        world = 'Welt 162';
+        await tab.evaluateJavaScript(`function() {
+            var worlds = document.querySelectorAll('a.world-select > span.world_button_active');
+            for (var i = 0; i < worlds.length; i++) {
+                if (worlds[i].innerText == "${world}") {
+                    worlds[i].click();
+                }          
+            }
+        }`);
+        
         writeFile('✔ Selected world');
         // wait for world to be loaded
         await sleep(2000);
+
+        tab.render('out.jpg');
+
         // open main building
         await tab.evaluateJavaScript(`function() {document.querySelector('area[href="${urlOf(false, 'main')}"]').click();}`);
         writeFile('✔ Opened Main Building');
@@ -211,7 +240,7 @@ async function run() {
 }
 
 // start
-(async () => await run())();
+(async () => await start())();
 
 
 // util functions

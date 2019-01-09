@@ -22,6 +22,12 @@ socket.on('levels', levels => {
     });
 });
 
+socket.on('screen', b64 => {
+    $('#screen').attr('src', 'data:image/jpeg;base64,' + b64);
+});
+
+socket.on('reload frame', () => reloadFrame());
+
 socket.on('var changed', (name, value) => {
     $('#status [data-name=' + name + ']').html(value.toString());
     if (name == 'paused') {

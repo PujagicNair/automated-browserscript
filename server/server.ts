@@ -45,13 +45,19 @@ io.on('connection', function(socket: any) {
 });
 
 
-/*(async () => {
+(async () => {
     let browser = new Browser({ loadImages: 'yes' });
     let hack = new TribalHack(EServer.DE161, { username: 'AboIsSoGood', password: 'Qay123456' }, console.log);
-    await hack.setup(browser);
-    await hack.start();
-})();*/
+    hack.plugins = [ 'recource-amount', 'auto-mines', 'logs' ];
+    try {
+        await hack.setup(browser);
+        await hack.tick();
+        await hack.start();
+    } catch (error) {
+        console.log(error);
+    }
 
+})();
 
 // boot
 http.listen(80);
