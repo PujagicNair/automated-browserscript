@@ -4,38 +4,21 @@ export interface IMeta {
     name: string;
     description: string;
     costs?: number;
-    config?: IConfig;
+    config?: IConfigValue[];
     requires?: string[];
     addition?: string;
 }
 
-interface IConfig {
-    [field: string]: IConfigValue;
-}
-
-type IConfigValue = IConfigValueNumber | IConfigValueString | IConfigValueRadio | IConfigValueCheckbox;
-
-interface ValueType {
+interface IConfigValue {
+    name: string;
+    label: string;
     type: 'string' | 'number' | 'radio' | 'email' | 'checkbox';
     description?: string;
     reconfigurable?: boolean;
-}
-
-interface IConfigValueNumber extends ValueType {
     min?: number;
     max?: number;
-}
-
-interface IConfigValueString extends ValueType {
     max_length?: number;
-}
-
-interface IConfigValueRadio extends ValueType {
-    values: string[];
-}
-
-interface IConfigValueCheckbox extends ValueType {
-    values: string[];
+    values?: string[];
 }
 
 export interface HackPlugin {

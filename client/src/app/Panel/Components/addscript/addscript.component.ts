@@ -58,6 +58,13 @@ export class AddscriptComponent implements OnInit {
     }
   }
 
+  ticks = {
+    label: "ticks every second",
+    type: "radio",
+    name: "ticks",
+    values: ["10", "20", "40", "60", "100", "480"]
+  }
+
   parseSummary() {
     let summary = Object.assign({}, this.userdata);
     summary.password = Array(summary.password.length).fill('*').join('');
@@ -77,16 +84,6 @@ export class AddscriptComponent implements OnInit {
   get maps() {
     if (this.steps[1].data.server) {
       return this.data.servers.find(server => server.key == this.steps[1].data.server).maps;
-    } else {
-      return [];
-    }
-  }
-
-  get effects() {
-    let server = this.steps[1].data.server;
-    let map = this.steps[2].data.map;
-    if (server && map) {
-      return this.data.effects.filter(effect => !effect.maps || effect.maps.find(map => map.server == server && map.map == map));
     } else {
       return [];
     }

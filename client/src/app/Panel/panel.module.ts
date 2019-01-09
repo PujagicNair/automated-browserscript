@@ -7,6 +7,7 @@ import { OverviewComponent } from './Components/overview/overview.component';
 import { RootComponent } from './Components/root/root.component';
 import { AddscriptComponent } from './Components/addscript/addscript.component';
 import { PanelRoutingModule } from './panel-routing.module';
+import { DynFormComponent } from '../Panel/Components/dyn-form/dyn-form.component';
 
 
 
@@ -16,7 +17,8 @@ import { PanelRoutingModule } from './panel-routing.module';
   declarations: [
     OverviewComponent,
     RootComponent,
-    AddscriptComponent
+    AddscriptComponent,
+    DynFormComponent
   ],
   imports: [
     CommonModule,

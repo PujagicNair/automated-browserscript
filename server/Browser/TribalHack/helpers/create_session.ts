@@ -39,8 +39,3 @@ export default function createSession(hack: TribalHack): Promise<void> {
         return resolve();
     });
 }
-
-export interface Credentials {
-    username: string;
-    password: string;
-}

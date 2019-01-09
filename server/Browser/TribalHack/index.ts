@@ -1,8 +1,12 @@
 import { Browser } from "../index";
-import createSession, { Credentials } from "./helpers/create_session";
+import * as fs from 'fs-extra';
+import * as path from 'path';
+import createSession from "./helpers/create_session";
 import loadPlugins from './helpers/plugin_loader';
 import { HackPluginData } from "./IMeta";
 import providePluginsFor from "./helpers/plugin_require_provider";
+import { Connection } from "mongoose";
+import { createModels, TribalHackModel, MTribalHackDocument } from "./models/MHack";
 
 declare var document : {
     getElementById(id : string) : anyElement;
@@ -20,6 +24,7 @@ const SERVERS = {
 
 export class TribalHack {
 
+    _id: string;
     villageId: string;
     browser: Browser;
     server: { url: string, map: string };
@@ -29,26 +34,40 @@ export class TribalHack {
 
     private isRunning = false;
 
-    constructor(input, public output?: (action: string, ...adds: any[]) => void) {
-        this.config = input;
-        this.plugins = Object.keys(this.config.plugins).filter(key => this.config.plugins[key]);
-
-        this.server = SERVERS[this.config.server + this.config.map];
-        if (!this.server) {
-            throw new Error('Server or Map invalide');
+    constructor(input?: any, public output?: (action: string, ...adds: any[]) => void) {
+        if (input) {
+            this.config = input;
+            this.plugins = Object.keys(this.config.plugins).filter(key => this.config.plugins[key]);
+    
+            this.server = SERVERS[this.config.server + this.config.map];
+            if (!this.server) {
+                throw new Error('Server or Map invalide');
+            }
         }
         if (!this.output) {
             this.output = (...args) => {};
         }
     }
 
+    static setup(conn: Connection) {
+        return new Promise(async resolve => {
+            createModels(conn);
+            let pluginData = await loadPlugins();
+            let plugins = Object.keys(pluginData).map(key => pluginData[key].meta);
+            let servers = JSON.parse(fs.readFileSync(path.join(__dirname, 'models', 'servers.json')).toString());
+            fs.writeFileSync(path.join(__dirname, 'models', 'data.json'), JSON.stringify({ plugins, servers }));
+
+            return resolve();
+        });
+    }
+
     setup() {
         return new Promise(async (resolve, reject) => {
             try {
-                this.browser = new Browser(this.config.browserOptions);
-                await this.browser.start();
-                await createSession(this);
-                this.pluginData = await loadPlugins(this);
+                //this.browser = new Browser(this.config.browserOptions);
+                //await this.browser.start();
+                //await createSession(this);
+                await loadPlugins(this);
                 return resolve();
             } catch (error) {
                 return reject(error);
@@ -86,12 +105,40 @@ export class TribalHack {
 
     stop() {}
 
-    serialize(data: any): TribalHack {
-        return null;
+    private static serialize(data: any, output?: (action: string, ...adds: any[]) => void): TribalHack {
+        let hack = new TribalHack(null, output);
+        Object.keys(data).forEach(key => {
+            hack[key] = data[key];
+        })
+        return hack;
     }
 
-    deserialize(): any {
-        return null;
+    private deserialize(): any {
+        let save = {};
+        ['villageId', 'server', 'plugins', 'config'].forEach(prop => {
+            save[prop] = this[prop];
+        });
+        return JSON.parse(JSON.stringify(save));
+    }
+
+    save(): Promise<MTribalHackDocument> {
+        return new Promise(async resolve => {
+            let model;
+            if (this._id) {
+                model = await TribalHackModel.findByIdAndUpdate(this._id, this.deserialize());
+            } else {
+                model = new TribalHackModel(this.deserialize());
+                await model.save();
+            }
+            return resolve(model);
+        });
+    }
+
+    static load(objectID: string, output?: (action: string, ...adds: any[]) => void): Promise<TribalHack> {
+        return new Promise(async resolve => {
+            let doc = await TribalHackModel.findById(objectID);
+            return resolve(TribalHack.serialize(doc, output));
+        });
     }
 
 }
