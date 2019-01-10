@@ -1,9 +1,10 @@
 import { TribalHack } from "../../index";
-import { IMeta, HackPluginData } from "../../IMeta";
+import { IMeta } from "../../IMeta";
 
-export function run(hack: TribalHack, data: HackPluginData, pluginOptions: any): Promise<void> {
+export function run(hack: TribalHack, reqData: any): Promise<any> {
     return new Promise(async resolve => {
-        console.log(meta.name, Object.keys(data));
+        await reqData['switch-screen'].goto('main');
+        hack.output('screen on logs', reqData.screen);
         return resolve();
     });
 }
@@ -11,5 +12,6 @@ export function run(hack: TribalHack, data: HackPluginData, pluginOptions: any):
 export const meta: IMeta = {
     name: 'logs',
     description: 'You see the output of the script in your browser',
-    config: []
+    config: [],
+    requires: ['switch-screen', 'screen']
 }

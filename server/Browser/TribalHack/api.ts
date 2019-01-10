@@ -1,8 +1,5 @@
 import { Router } from "express";
-import * as fs from 'fs-extra';
-import * as path from 'path';
 import { TribalHack } from "./index";
-import { TribalHackModel } from "./models/MHack";
 import { User } from "../../Models/user";
 
 export class TribalHackApi {
@@ -11,15 +8,14 @@ export class TribalHackApi {
         let router = Router();
 
         router.get('/worlddatas', function(req, res) {
-            return res.json(JSON.parse(fs.readFileSync(path.join(__dirname, 'models', 'data.json')).toString()));
+            return res.json({ plugins: TribalHack.PLUGINS, servers: TribalHack.SERVERS });
         });
 
         router.post('/create', async function(req: any, res) {
             try {
                 let hack = new TribalHack(req.body, console.log);
                 await hack.setup();
-                /*await hack.tick();
-                await hack.start();*/
+                await hack.start();
 
                 let model = await hack.save();
                 let user = await User.findById(req.session.user);

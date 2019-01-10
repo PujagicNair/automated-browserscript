@@ -9,16 +9,21 @@ function swap(list, x, y) {
 
 export default function orderPlugins(plugins: HackPluginData, used: string[]): string[] {
 
-    let noreq = used.filter(name => !plugins[name].meta.requires || !plugins[name].meta.requires.length);
-    let havereq = used.filter(name => plugins[name].meta.requires && plugins[name].meta.requires.length);
+    let neworder = [];
 
-    let c = 1;
+    used.forEach((elem, index) => {
+        let requires = plugins[elem].meta.requires;
+        if (requires && requires.length) {
+            for (let req of requires) {
+                if (neworder.indexOf(req) == -1) {
+                    neworder.splice(0, 0, req);
+                }
+            }
+        }
+        if (neworder.indexOf(elem) == -1) {
+            neworder.push(elem);
+        }
+    });
 
-    for (let i in havereq) {
-        let index = Number(i);
-        let elem = havereq[i];
-       // swap right
-    }
-
-    return noreq.concat(havereq);
+    return neworder;
 }

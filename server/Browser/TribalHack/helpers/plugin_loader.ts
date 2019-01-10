@@ -23,8 +23,6 @@ export default function loadPlugins(hack?: TribalHack): Promise<any> {
         }
 
         let plugsOrdered = orderPlugins(plugins, hack.plugins);
-
-        console.log(plugsOrdered);
         
 
         let data: HackPluginData = {};
@@ -32,18 +30,16 @@ export default function loadPlugins(hack?: TribalHack): Promise<any> {
             let script = plugins[plugin];
             data[plugin] = script;
             if (script.meta.requires && !hasAllRequired(data, script.meta.requires)) {
-                console.log(plugin, script.meta.requires, Object.keys(data));
-                
                 return reject('failed to load plugin: ' + plugin + '! Some required module doesnt exist. For more information checkout the manual page of the plugin');
             } else {
                 console.log('all fine with', plugin);
-                
             }
         }
 
         hack.output('done loading plugins');
 
         hack.pluginData = data;
+        hack.plugins = plugsOrdered;
         return resolve();
     });
 }

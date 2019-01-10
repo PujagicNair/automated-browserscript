@@ -9,6 +9,7 @@ export class Browser {
     private isStarting = false;
     private tab: Webpage;
     private browser: phantom.PhantomJS;
+    url: string;
     start() {
 
         let opts = Object.keys(this.options).reduce((acc, key) => {
@@ -25,13 +26,20 @@ export class Browser {
             this.isStarting = true;
             this.browser = await phantom.create(opts);
             this.tab = await <any>this.browser.createPage();
+            await this.tab.on('onUrlChanged', newUrl => this.url = newUrl);
             this.isStarted = true;
             return resolve();
         });
     }
 
     open(url: string) {
-        return this.tab.open(url);
+        return new Promise(async resolve => {
+            await this.tab.on('onLoadFinished', async () => {
+                await this.tab.off('onLoadFinished');
+                return resolve();
+            });
+            this.tab.open('https://' + url);
+        });
     }
 
     restart() {

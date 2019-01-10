@@ -12,6 +12,7 @@ export default function createSession(hack: TribalHack): Promise<void> {
         }
 
         // open
+        hack.output('action', 'openening url');
         await hack.browser.open(hack.server.url);
         hack.output('action', 'openend url');
 
@@ -32,7 +33,8 @@ export default function createSession(hack: TribalHack): Promise<void> {
         hack.output('action', 'selected world');
 
         let villageId = await hack.browser.cookie('global_village_id');
-
+        hack.villageId = villageId.value;
+        
         hack.output('var', 'villageId', villageId.value);
         hack.output('var', 'booted', true);
 

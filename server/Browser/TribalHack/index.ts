@@ -8,6 +8,8 @@ import providePluginsFor from "./helpers/plugin_require_provider";
 import { Connection } from "mongoose";
 import { createModels, TribalHackModel, MTribalHackDocument } from "./models/MHack";
 
+let sleep = ms => new Promise(r => setTimeout(r, ms));
+
 declare var document : {
     getElementById(id : string) : anyElement;
     querySelector(sel : string) : anyElement;
@@ -19,7 +21,7 @@ export interface anyElement extends HTMLElement {
 }
 
 const SERVERS = {
-    'de161': { url: 'https://die-staemme.de/', map: '161' }
+    'de161': { url: 'die-staemme.de/', map: '161' }
 }
 
 export class TribalHack {
@@ -49,14 +51,15 @@ export class TribalHack {
         }
     }
 
+    static SERVERS;
+    static PLUGINS;
+
     static setup(conn: Connection) {
         return new Promise(async resolve => {
             createModels(conn);
             let pluginData = await loadPlugins();
-            let plugins = Object.keys(pluginData).map(key => pluginData[key].meta);
-            let servers = JSON.parse(fs.readFileSync(path.join(__dirname, 'models', 'servers.json')).toString());
-            fs.writeFileSync(path.join(__dirname, 'models', 'data.json'), JSON.stringify({ plugins, servers }));
-
+            TribalHack.PLUGINS = Object.keys(pluginData).map(key => pluginData[key].meta);
+            TribalHack.SERVERS = JSON.parse(fs.readFileSync(path.join(__dirname, 'models', 'servers.json')).toString());
             return resolve();
         });
     }
@@ -64,9 +67,9 @@ export class TribalHack {
     setup() {
         return new Promise(async (resolve, reject) => {
             try {
-                //this.browser = new Browser(this.config.browserOptions);
-                //await this.browser.start();
-                //await createSession(this);
+                this.browser = new Browser(this.config.browserOptions);
+                await this.browser.start();
+                await createSession(this);
                 await loadPlugins(this);
                 return resolve();
             } catch (error) {
@@ -76,26 +79,28 @@ export class TribalHack {
         });
     }
 
-    private urlOf(target : string) {
-        return `/game.php?village=${this.villageId}&screen=${target}`
-    }
-
     start() {
         this.isRunning = true;
-        /*(async () => {
-            while (true) {
-                //await sleep
+        (async () => {
+            while (this.isRunning) {
+                await this.tick();
+                await sleep(5000);
             }
-        })();*/
+        })();
     }
 
     tick() {
         return new Promise(async resolve => {
+            let data = {};
+            console.log('--------------------');
+            
             for (let plugin of this.plugins) {
                 let script = this.pluginData[plugin];
-                await script.run(this, providePluginsFor(this.pluginData, script.meta.requires), {});
-                return resolve();
+                let output = await script.run(this, data, '{}');
+                data[plugin] = output;
             }
+            
+            return resolve();
         });
     }
 
@@ -103,7 +108,9 @@ export class TribalHack {
 
     pause() {}
 
-    stop() {}
+    stop() {
+        this.isRunning = false;
+    }
 
     private static serialize(data: any, output?: (action: string, ...adds: any[]) => void): TribalHack {
         let hack = new TribalHack(null, output);
