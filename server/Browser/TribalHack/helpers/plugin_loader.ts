@@ -31,12 +31,8 @@ export default function loadPlugins(hack?: TribalHack): Promise<any> {
             data[plugin] = script;
             if (script.meta.requires && !hasAllRequired(data, script.meta.requires)) {
                 return reject('failed to load plugin: ' + plugin + '! Some required module doesnt exist. For more information checkout the manual page of the plugin');
-            } else {
-                console.log('all fine with', plugin);
             }
         }
-
-        hack.output('done loading plugins');
 
         hack.pluginData = data;
         hack.plugins = plugsOrdered;

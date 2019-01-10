@@ -9,22 +9,12 @@
       No scripts availble
     </div>
     <div class="script" *ngFor="let script of scripts">
-      <div class="name">{{ script.name }} ({{ script.world }})</div>
-      <div class="status">status: {{ script.status }}</div>
-      <div class="price">
-        price: {{ script.price }} coins/h, {{ script.price * 24 }} coins/day
-      </div>
-      <div>Effects</div>
+      <div class="name">{{ script.config.username }} ({{ script.config.server }}, {{ script.config.map }})</div>
+      <div>Plugins</div>
       <ul class="effects">
-        <li *ngFor="let effect of script.effects">{{ effect }}</li>
+        <li *ngFor="let plugin of script.plugins">{{ plugin }}</li>
       </ul>
-
-      <div>
-        Settings
-      </div>
-      <ul class="settings">
-        <li class="setting" *ngFor="let setting of script.settings">{{ setting.key }}: {{ setting.value }}</li>
-      </ul>
+      <a [routerLink]="'script/' + script._id">more details</a>
     </div>
     <a routerLink="addscript">Add Script</a>
   </div>

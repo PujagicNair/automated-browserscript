@@ -54,12 +54,10 @@
     <div class="plugin" *ngFor="let config of pluginConfig">
       <div class="show" *ngIf="config.config && config.config.length">
         <div class="form" *ngFor="let field of config.config">
-          <dyn-form [data]="field" [(outval)]="scope[field.label]"></dyn-form>
+          <dyn-form [data]="field" [(outval)]="scope.plugin_config[config.name][field.name]"></dyn-form>
         </div>
       </div>
     </div>
-
-    {{ scope | json }}
 
   </div>
   <div *ngIf="step == 6">
@@ -74,5 +72,7 @@
       </tr>
     </table>
     <button (click)="submit()">Create</button>
+
+    {{ output }}
   </div>
 </div>

@@ -3,8 +3,6 @@ import { IMeta } from "../../IMeta";
 
 export function run(hack: TribalHack, reqData: any): Promise<any> {
     return new Promise(async resolve => {
-        await reqData['switch-screen'].goto('main');
-        hack.output('screen on logs', reqData.screen);
         return resolve();
     });
 }

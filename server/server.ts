@@ -9,7 +9,6 @@ import { Server } from 'http';
 import socketIO from 'socket.io';
 import Router from './Handlers/router';
 import Logger from './Handlers/logger';
-import * as shared from './shared';
 import { TribalHack } from './Browser/TribalHack';
 import { createUserModel } from './Models/user';
 
@@ -19,6 +18,11 @@ import { createUserModel } from './Models/user';
     let http = new Server(app);
     let io = socketIO(http);
     let logger = new Logger(console.log);
+
+    // share
+    global.logger = logger;
+    global.io = io;
+    global.sessions = {};
 
     let mongodb = await mongoose.connect('mongodb://localhost:27017/tribal', { useNewUrlParser: true });
     let conn = mongodb.connection;
@@ -32,10 +36,6 @@ import { createUserModel } from './Models/user';
         saveUninitialized: true
     });
 
-    // share
-    shared.setLogger(logger);
-    shared.setIO(io);
-
     // http runners
     app.use(cookieParser());
     app.use(bodyParser.json());
@@ -48,7 +48,7 @@ import { createUserModel } from './Models/user';
 
     // test only
     io.on('connection', function(socket: any) {
-        shared.sessions[socket.handshake.session.user] = socket.id;
+        global.sessions[socket.handshake.session.user] = socket.id;
         io.to(socket.id).emit('init', { status: 'running' });
     });
 

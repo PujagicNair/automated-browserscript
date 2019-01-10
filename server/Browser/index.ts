@@ -1,5 +1,4 @@
 import * as phantom from 'phantom';
-import * as shared from '../shared';
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 

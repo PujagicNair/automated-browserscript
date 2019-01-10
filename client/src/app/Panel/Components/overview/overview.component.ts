@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-overview',
@@ -7,38 +8,14 @@ import { Component, OnInit } from '@angular/core';
 })
 export class OverviewComponent implements OnInit {
 
-  constructor() { }
+  constructor(private http: HttpClient) { }
 
-  scripts = [
-    {
-      name: 'Main Acc',
-      world: 'DE161',
-      status: 'running',
-      price: 44,
-      effects: [
-        'crash-protection',
-        'auto-palladin',
-        'attack-notify'
-      ],
-      settings: [{
-        key: 'ticks', value : 25
-      }]
-    },
-    {
-      name: 'Off Acc',
-      world: 'DE161',
-      status: 'paused',
-      price: 21,
-      effects: [
-        'max-mines'
-      ],
-      settings: [{
-        key: 'ticks', value : 10
-      }]
-    }
-  ]
+  scripts;
 
   ngOnInit() {
+    this.http.get('/api/scripts').subscribe((scripts: any) => {
+      this.scripts = scripts;
+    });
   }
 
 }

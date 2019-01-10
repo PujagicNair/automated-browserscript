@@ -1,5 +1,5 @@
 [
-    { "key": "de", "value": "Deutschland", "maps": ["161", "162", "163"] },
+    { "key": "de", "value": "Deutschland", "maps": ["160", "161", "162", "163"] },
     { "key": "ch", "value": "Schweiz", "maps": ["165", "166", "167"] },
     { "key": "us", "value": "Amerika", "maps": ["169", "122", "113"] }
 ]

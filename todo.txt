@@ -1,0 +1,8 @@
+client
+    auto select plugin requires
+    browser settings (ticks, load images)
+
+server
+    plugin ratings
+    plugin popularity
+    provide plugiins for

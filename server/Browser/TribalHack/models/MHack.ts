@@ -9,11 +9,12 @@ export function createModels(conn: Connection) {
         villageId: String
     });
 
-    TribalHackModel = conn.model<any, any>('tribal_hack', STribalHack);
+    TribalHackModel = conn.model<any, any>('script', STribalHack);
 }
 
 interface ITribalHackModel {
-
+    isRunning: boolean;
+    running: boolean;
 }
 export interface MTribalHackDocument extends Document, ITribalHackModel {
 

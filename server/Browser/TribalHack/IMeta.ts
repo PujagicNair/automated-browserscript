@@ -18,6 +18,7 @@ interface IConfigValue {
     min?: number;
     max?: number;
     max_length?: number;
+    required?: boolean;
     values?: string[];
 }
 
