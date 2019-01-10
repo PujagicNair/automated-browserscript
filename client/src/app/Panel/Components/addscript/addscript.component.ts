@@ -35,8 +35,14 @@ export class AddscriptComponent implements OnInit {
     { title: 'Select a map', data: {}, disabled() { return !this.data.map } },
     { title: 'Settings', data: {}, disabled() { return !this.data.ticks } },
     { title: 'Plugins', data: { plugins: {} }, disabled() { return false } },
+    { title: 'Configure Plugins', data: {}, disabled() { return false }, init: () => {
+      let selectedPlugins = this.steps[4].data.plugins;
+      let pluginNames = Object.keys(selectedPlugins).filter(key => selectedPlugins[key]);
+      let plugins = pluginNames.map(name => this.data.plugins.find(plugin => plugin.name == name));
+      this.pluginConfig = plugins;
+    } },
     { title: 'Connect Account', data: {}, disabled() { return !this.data.username || !this.data.password }, init: () => this.userdata = undefined },
-    { title: 'Summary', data: {}, disabled() { return false }, init: () => {
+    { title: 'Summary', data: {}, disabled() { return true }, init: () => {
       let end = {};
       this.steps.forEach(step => {
         if (step.data) {
@@ -47,7 +53,7 @@ export class AddscriptComponent implements OnInit {
     }}
   ];
 
-
+  pluginConfig;
 
   next() {
     if (this.steps[this.step + 1] && !this.steps[this.step].disabled()) {

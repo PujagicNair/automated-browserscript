@@ -22,7 +22,7 @@ interface IConfigValue {
 }
 
 export interface HackPlugin {
-    run(hack: TribalHack, data: HackPluginData, config: any): Promise<void>;
+    run(hack: TribalHack, data: HackPluginData, config: any): Promise<any>;
     meta: IMeta;
     userconfig: any;
 }

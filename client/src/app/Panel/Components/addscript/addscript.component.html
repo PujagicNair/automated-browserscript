@@ -15,7 +15,7 @@
     <div class="author">Author: {{ effect.author }}</div>
   </div>-->
 
-  
+
   <button (click)="back()">Back</button>
   <button [disabled]="steps[step].disabled()" (click)="next()">Next</button>
 
@@ -27,14 +27,14 @@
   </div>
   <div *ngIf="step == 1">
     <div class="input-holder" *ngFor="let server of data.servers">
-        <input type="radio"  [value]="server.key" [id]="'server' + server.key" [(ngModel)]="scope.server">
-        <label [for]="'server' + server.key">{{ server.value }}</label>
+      <input type="radio" [value]="server.key" [id]="'server' + server.key" [(ngModel)]="scope.server">
+      <label [for]="'server' + server.key">{{ server.value }}</label>
     </div>
   </div>
   <div *ngIf="step == 2">
     <div class="input-holder" *ngFor="let map of maps">
-        <input type="radio"  [value]="map" [id]="'map' + map" [(ngModel)]="scope.map">
-        <label [for]="'map' + map">{{ map }}</label>
+      <input type="radio" [value]="map" [id]="'map' + map" [(ngModel)]="scope.map">
+      <label [for]="'map' + map">{{ map }}</label>
     </div>
   </div>
   <div *ngIf="step == 3">
@@ -51,10 +51,22 @@
     </div>
   </div>
   <div *ngIf="step == 5">
+    <div class="plugin" *ngFor="let config of pluginConfig">
+      <div class="show" *ngIf="config.config && config.config.length">
+        <div class="form" *ngFor="let field of config.config">
+          <dyn-form [data]="field" [(outval)]="scope[field.label]"></dyn-form>
+        </div>
+      </div>
+    </div>
+
+    {{ scope | json }}
+
+  </div>
+  <div *ngIf="step == 6">
     <input type="text" [(ngModel)]="scope.username">
     <input type="password" [(ngModel)]="scope.password">
   </div>
-  <div *ngIf="step == 6">
+  <div *ngIf="step == 7">
     <table>
       <tr *ngFor="let sum of parseSummary()">
         <td>{{ sum.key }}</td>

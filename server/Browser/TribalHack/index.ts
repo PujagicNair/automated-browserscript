@@ -92,13 +92,13 @@ export class TribalHack {
     tick() {
         return new Promise(async resolve => {
             let data = {};
-            console.log('--------------------');
-            
             for (let plugin of this.plugins) {
                 let script = this.pluginData[plugin];
-                let output = await script.run(this, data, '{}');
+                let output = await script.run(this, data, {});
                 data[plugin] = output;
             }
+
+            this.output('tickdata', data);
             
             return resolve();
         });

@@ -6,14 +6,17 @@ export function run(hack: TribalHack, reqData: any) {
         let output = {
             goto(screen: string) {
                 return new Promise(async resolve => {
-                    if (screen != reqData.screen) {
-                        hack.output('switched screen', screen);
+                    if (screen != reqData['screen']) {
+                        this.data.push('switched screen to ' + screen);
                         await hack.browser.open(`${hack.config.server + hack.config.map}.${hack.server.url}/game.php?village=${hack.villageId}&screen=${screen}`);
+                    } else {
+                        this.data.push('didnt switch screen, already on it');
                     }
                     return resolve();
                 });
 
-            }
+            },
+            data: []
         }
         return resolve(output);
     });

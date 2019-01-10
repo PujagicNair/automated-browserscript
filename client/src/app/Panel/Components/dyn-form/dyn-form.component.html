@@ -1,11 +1,16 @@
 <table>
   <tr>
-    <td>{{ data.label }}</td>
+    <td *ngIf="data.type == 'radio'">{{ data.label }}</td>
     <td *ngIf="data.type == 'radio'">
       <div class="intput-holder" *ngFor="let value of data.values">
           <input [type]="data.type" [name]="data.name" [value]="value" [id]="data.name + value" (change)="changeRadioValue($event)">
           <label [for]="data.name + value">{{ value }}</label>
       </div>
+    </td>
+    <td *ngIf="data.type != 'radio'">
+        <label [for]="data.name">{{ data.label }}</label>
+        <input [type]="data.type" [id]="data.name" [(ngModel)]="val">
+        <div class="desc" *ngIf="data.description">({{ data.description }})</div>
     </td>
   </tr>
 </table>
