@@ -31,6 +31,14 @@ export default class Router {
             s.redirect('/');
         });
 
+        router.get('/testwidget', function(req, res) {
+            return res.json({
+                tick: `(function(data, render) {
+                    return render(data, "<div>hello</div><div>@wood</div>")
+                })`
+            });
+        });
+
         router.use('/api', TribalHackApi.handler());
 
         return router;

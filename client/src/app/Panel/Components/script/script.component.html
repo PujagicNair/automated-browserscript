@@ -1,0 +1,30 @@
+{{ script |json }}
+
+<div class="script" *ngIf="script">
+    <table>
+        <tr>
+            <th>Overview</th>
+        </tr>
+        <tr>
+            <td>status</td>
+            <td>{{ script.status }}</td>
+        </tr>
+        <tr>
+            <td>username</td>
+            <td>{{ script.config.username }}</td>
+        </tr>
+        <tr>
+            <td>id</td>
+            <td>{{ script._id }}</td>
+        </tr>
+    </table>
+
+    <div>Plugins</div>
+    <div class="plugin" *ngFor="let plugin of script.plugins">
+        <div class="name">{{ plugin }}</div>
+        <div class="widget" *ngIf="script.pluginSetup[plugin] && script.pluginSetup[plugin].hasWidget">
+            <widget [scriptID]="script._id" [plugin]="plugin"></widget>
+        </div>
+        <a href="" *ngIf="script.pluginSetup[plugin] && script.pluginSetup[plugin].hasPage">Goto Plugin Page</a>
+    </div>
+</div>

@@ -3,6 +3,10 @@ import { TribalHack } from "./index";
 export interface IMeta {
     name: string;
     description: string;
+    pluginSetup?: {
+        hasWidget?: boolean;
+        hasPage?: boolean;
+    }
     costs?: number;
     config?: IConfigValue[];
     requires?: string[];

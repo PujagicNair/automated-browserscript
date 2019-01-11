@@ -27,6 +27,9 @@ const SERVERS = {
     'de163': { url: 'die-staemme.de/', map: '163' }
 }
 
+type defaultOutput = (scriptID: string, action: string, data: any) => void;
+type pluginOutput = (scriptID: string, plugin: string, data: any) => void;
+
 export class TribalHack {
 
     _id: string;
@@ -35,11 +38,14 @@ export class TribalHack {
     server: { url: string, map: string };
     plugins: string[];
     pluginData: HackPluginData;
+    pluginSetup: any;
     config;
+    private model: MTribalHackDocument;
 
-    constructor(input: any, public output: (action: string, ...adds: any[]) => void) {
+    constructor(input: any) {
         if (input) {
             this.config = input;
+            this.config.plugin_config = this.config.plugin_config || {};
             this.plugins = Object.keys(this.config.plugins).filter(key => this.config.plugins[key]);
     
             this.server = SERVERS[this.config.server + this.config.map];
@@ -52,6 +58,9 @@ export class TribalHack {
     static SERVERS;
     static PLUGINS;
     static RUNNING: { [key: string]: TribalHack } = {};
+    static defaultOutput: defaultOutput;
+    static widgetOutput: pluginOutput;
+    static pluginOutput: pluginOutput;
     
     private _status : string = 'offline';
     public get status() : string {
@@ -59,7 +68,7 @@ export class TribalHack {
     }
     public set status(v : string) {
         this._status = v;
-        this.output('status', this._id, v);
+        TribalHack.defaultOutput(this._id, 'status', v);
     }
     
 
@@ -80,7 +89,14 @@ export class TribalHack {
                 await this.browser.start();
                 await loadPlugins(this);
                 await createSession(this);
+                if (this._id) {
+                    this.model = await TribalHackModel.findById(this._id);
+                } else {
+                    this.model = new TribalHackModel(this.deserialize());
+                    this._id = this.model._id;
+                }
                 this.status = 'ready';
+                TribalHack.RUNNING[this._id] = this;
                 return resolve();
             } catch (error) {
                 return reject(error);
@@ -94,7 +110,7 @@ export class TribalHack {
         (async () => {
             while (this.status == 'running') {
                 await this.tick();
-                await sleep(5000);
+                await sleep(10000);
             }
         })();
     }
@@ -105,6 +121,12 @@ export class TribalHack {
             for (let plugin of this.plugins) {
                 let script = this.pluginData[plugin];
                 let output = await script.run(this, data, this.config.plugin_config[plugin]);
+                if (this.pluginSetup[plugin] && this.pluginSetup[plugin].hasWidget) {
+                    TribalHack.widgetOutput(this._id, plugin, output);
+                }
+                if (this.pluginSetup[plugin] && this.pluginSetup[plugin].hasPage) {
+                    TribalHack.pluginOutput(this._id, plugin, output);
+                }
                 data[plugin] = output;
             }
             
@@ -134,18 +156,18 @@ export class TribalHack {
         this.status = 'ready';
     }
 
-    private static serialize(data: any, output: (action: string, ...adds: any[]) => void): TribalHack {
-        let hack = new TribalHack(null, output);
+    private static serialize(data: any): TribalHack {
+        let hack = new TribalHack(data.config);
         Object.keys(data).forEach(key => {
             hack[key] = data[key];
         });
-        TribalHack.RUNNING[hack._id] = hack;
+        hack._id = data._id;
         return hack;
     }
 
     deserialize(): any {
         let save = {};
-        ['villageId', 'server', 'plugins', 'config', 'status'].forEach(prop => {
+        ['villageId', 'server', 'plugins', 'config', 'status', '_id', 'pluginSetup'].forEach(prop => {
             save[prop] = this[prop];
         });
         return JSON.parse(JSON.stringify(save));
@@ -153,22 +175,19 @@ export class TribalHack {
 
     save(): Promise<MTribalHackDocument> {
         return new Promise(async resolve => {
-            let model;
-            if (this._id) {
-                model = await TribalHackModel.findByIdAndUpdate(this._id, this.deserialize());
-            } else {
-                model = new TribalHackModel(this.deserialize());
-            }
-            delete model.status;
-            await model.save();
-            return resolve(model);
+            let ser = this.deserialize();
+            Object.keys(ser).forEach(key => {
+                this.model[key] = ser[key];
+            });
+            await this.model.save();
+            return resolve(this.model);
         });
     }
 
-    static load(objectID: string, output: (action: string, ...adds: any[]) => void): Promise<TribalHack> {
+    static load(objectID: string): Promise<TribalHack> {
         return new Promise(async resolve => {
             let doc = await TribalHackModel.findById(objectID);
-            return resolve(TribalHack.serialize(doc, output));
+            return resolve(TribalHack.serialize(doc));
         });
     }
 

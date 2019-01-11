@@ -6,7 +6,11 @@ export function createModels(conn: Connection) {
         server: Schema.Types.Mixed,
         plugins: [String],
         config: Schema.Types.Mixed,
-        villageId: String
+        villageId: String,
+        pluginSetup: {
+            type: Schema.Types.Mixed,
+            default: {}
+        }
     });
 
     TribalHackModel = conn.model<any, any>('script', STribalHack);
@@ -15,6 +19,7 @@ export function createModels(conn: Connection) {
 interface ITribalHackModel {
     isRunning: boolean;
     running: boolean;
+    config: any;
 }
 export interface MTribalHackDocument extends Document, ITribalHackModel {
 

@@ -24,14 +24,18 @@ export default function loadPlugins(hack?: TribalHack): Promise<any> {
 
         let plugsOrdered = orderPlugins(plugins, hack.plugins);
         
+        hack.pluginSetup = {};
+        
 
         let data: HackPluginData = {};
         for (let plugin of plugsOrdered) {
             let script = plugins[plugin];
+            hack.pluginSetup[script.meta.name] = script.meta.pluginSetup || {};
             data[plugin] = script;
             if (script.meta.requires && !hasAllRequired(data, script.meta.requires)) {
                 return reject('failed to load plugin: ' + plugin + '! Some required module doesnt exist. For more information checkout the manual page of the plugin');
             }
+            
         }
 
         hack.pluginData = data;

@@ -9,7 +9,7 @@ export function createUserModel(conn: Connection) {
         name: String,
         scripts: {
             type: [Schema.Types.ObjectId],
-            ref: 'script',
+            ref: 'scripts',
             default: []
         }
     });

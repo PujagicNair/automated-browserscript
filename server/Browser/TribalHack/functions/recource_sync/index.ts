@@ -17,5 +17,8 @@ export function run(hack: TribalHack) {
 export const meta: IMeta = {
     name: 'recource-sync',
     description: 'See your recources realtime in the browser',
-    config: []
+    config: [],
+    pluginSetup: {
+        hasWidget: true
+    }
 }

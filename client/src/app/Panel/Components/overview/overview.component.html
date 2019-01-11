@@ -10,6 +10,12 @@
     </div>
     <div class="script" *ngFor="let script of scripts">
       <div class="name">{{ script.config.username }} ({{ script.config.server }}, {{ script.config.map }})</div>
+      <table>
+        <tr>
+          <td>Status</td>
+          <td>{{ script.status }}</td>
+        </tr>
+      </table>
       <div>Plugins</div>
       <ul class="effects">
         <li *ngFor="let plugin of script.plugins">{{ plugin }}</li>

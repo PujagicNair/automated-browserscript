@@ -11,6 +11,7 @@ import Router from './Handlers/router';
 import Logger from './Handlers/logger';
 import { TribalHack } from './Browser/TribalHack';
 import { createUserModel } from './Models/user';
+import { TribalHackApi } from './Browser/TribalHack/api';
 
 (async () => {
     // server setup
@@ -29,6 +30,7 @@ import { createUserModel } from './Models/user';
     
     createUserModel(conn);
     await TribalHack.setup(conn);
+    TribalHackApi.setup();
 
     let sess = session({
         secret: 'keyboard cat',
