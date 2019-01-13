@@ -1,18 +1,11 @@
-import { HackPluginData } from "../IMeta";
+import { PluginRequireData } from "../interfaces";
 
-function swap(list, x, y) {
-    let b = list[y];
-    list[y] = list[x];
-    list[x] = b;
-}
-
-
-export default function orderPlugins(plugins: HackPluginData, used: string[]): string[] {
+export default function orderPlugins(plugins: PluginRequireData, used: string[]): string[] {
 
     let neworder = [];
 
     used.forEach((elem, index) => {
-        let requires = plugins[elem].meta.requires;
+        let requires = plugins[elem].requires;
         if (requires && requires.length) {
             for (let req of requires) {
                 if (neworder.indexOf(req) == -1) {

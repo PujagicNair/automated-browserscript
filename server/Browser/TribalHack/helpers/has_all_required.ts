@@ -1,5 +1,5 @@
-import { HackPluginData } from "../IMeta";
+import { PluginRequireData } from "../interfaces";
 
-export default function hasAllRequired(data: HackPluginData, required: string[]) {
+export default function hasAllRequired(data: PluginRequireData, required: string[]) {
     return !required.some(plugin => !data[plugin]);
 }

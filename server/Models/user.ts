@@ -1,9 +1,9 @@
-import { Document, Model, Connection, Schema } from "mongoose";
+import { Document, Model, Schema } from "mongoose";
 
 
 export var User: MUserStatic;
 
-export function createUserModel(conn: Connection) {
+export function createUserModel() {
 
     let SUser = new Schema({
         name: String,
@@ -14,7 +14,7 @@ export function createUserModel(conn: Connection) {
         }
     });
 
-    User = conn.model<MUser, any>('user', SUser);
+    User = global.connection.model('user', SUser);
 }
 
 interface IUser {

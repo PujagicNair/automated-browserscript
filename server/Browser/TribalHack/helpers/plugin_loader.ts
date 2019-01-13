@@ -1,21 +1,22 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { HackPluginData, HackPlugin } from '../IMeta';
-import { TribalHack } from '../index';
-import hasAllRequired from '../helpers/has_all_required';
+import { PluginRequireData, IPlugin } from '../interfaces';
+import { TribalHack } from '..';
+import hasAllRequired from './has_all_required';
 import orderPlugins from './order_plugins';
 
-export default function loadPlugins(): Promise<HackPluginData>;
+export default function loadPlugins(): Promise<PluginRequireData>;
 export default function loadPlugins(hack: TribalHack): Promise<void>;
 export default function loadPlugins(hack?: TribalHack): Promise<any> {
     return new Promise(async (resolve, reject) => {
         
         let pluginFiles = fs.readdirSync(path.join(__dirname, '..', 'functions'));
-        let plugins: HackPluginData = {};
+        
+        let plugins: PluginRequireData = {};
 
         for (let file of pluginFiles) {
-            let script: HackPlugin = await import('../functions/' + file);
-            plugins[script.meta.name] = script;
+            let script: IPlugin = await import('../functions/' + file);
+            plugins[script.name] = script;
         }
 
         if (!hack) {
@@ -24,15 +25,12 @@ export default function loadPlugins(hack?: TribalHack): Promise<any> {
 
         let plugsOrdered = orderPlugins(plugins, hack.plugins);
         
-        hack.pluginSetup = {};
-        
 
-        let data: HackPluginData = {};
+        let data: PluginRequireData = {};
         for (let plugin of plugsOrdered) {
             let script = plugins[plugin];
-            hack.pluginSetup[script.meta.name] = script.meta.pluginSetup || {};
             data[plugin] = script;
-            if (script.meta.requires && !hasAllRequired(data, script.meta.requires)) {
+            if (script.requires && !hasAllRequired(data, script.requires)) {
                 return reject('failed to load plugin: ' + plugin + '! Some required module doesnt exist. For more information checkout the manual page of the plugin');
             }
             

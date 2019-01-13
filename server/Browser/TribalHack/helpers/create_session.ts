@@ -1,4 +1,4 @@
-import { TribalHack } from "../index";
+import { TribalHack } from "..";
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 

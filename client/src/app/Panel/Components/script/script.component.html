@@ -20,11 +20,17 @@
     </table>
 
     <div>Plugins</div>
-    <div class="plugin" *ngFor="let plugin of script.plugins">
-        <div class="name">{{ plugin }}</div>
-        <div class="widget" *ngIf="script.pluginSetup[plugin] && script.pluginSetup[plugin].hasWidget">
-            <widget [scriptID]="script._id" [plugin]="plugin"></widget>
+    <div *ngFor="let plugin of script.plugins">
+        <div class="plugin" *ngIf="shouldShow(plugin)">
+            <div class="header">{{ plugin }}</div>
+            <div class="widget" *ngIf="script.pluginData[plugin].pluginSetup.hasWidget">
+                <widget [scriptID]="script._id" [plugin]="plugin"></widget>
+            </div>
+            <div class="page" *ngIf="script.pluginData[plugin].pluginSetup.hasPage">
+                <a [routerLink]="'plugin/' + plugin">Goto Plugin Page</a>
+            </div>
         </div>
-        <a href="" *ngIf="script.pluginSetup[plugin] && script.pluginSetup[plugin].hasPage">Goto Plugin Page</a>
     </div>
 </div>
+
+<router-outlet></router-outlet>

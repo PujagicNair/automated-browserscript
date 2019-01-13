@@ -1,16 +1,16 @@
 import * as phantom from 'phantom';
+import { IBrowserOptions } from './TribalHack/interfaces';
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 export class Browser {
-    constructor(private options: any = {}) {}
+    constructor(private options: IBrowserOptions = { loadImages: 'no' }) {}
     isStarted = false;
     private isStarting = false;
     private tab: Webpage;
     private browser: phantom.PhantomJS;
     url: string;
     start() {
-
         let opts = Object.keys(this.options).reduce((acc, key) => {
             let arr = "--" + key.split(/([A-Z][a-z]+)/).filter(v => v).map(v => v.toLowerCase()).join("-");
             acc.push(arr + (this.options[key] != null ? '=' + this.options[key] : ''))
@@ -25,6 +25,7 @@ export class Browser {
             this.isStarting = true;
             this.browser = await phantom.create(opts);
             this.tab = await <any>this.browser.createPage();
+            this.tab.on('onError', console.log)
             await this.tab.on('onUrlChanged', newUrl => this.url = newUrl);
             this.isStarted = true;
             return resolve();
@@ -67,6 +68,10 @@ export class Browser {
         }
     }
 
+    click(selector: string) {
+        return this.exec(`function() { document.querySelector("${selector}").click(); }`);
+    }
+
     cookies() {
         return this.tab.cookies();
     }
@@ -81,27 +86,6 @@ export class Browser {
 
     screenshot(name: string) {
         return this.tab.renderBase64(name);
-    }
-
-    stream(callback: (base64: string, took?: number) => void, frameSpace?: number): { stop(): void } {
-        let running = true;
-        (async () => {
-            while (running) {
-                let before = Date.now();
-                let screen = await this.screenshot('jpeg');
-                let after = Date.now();
-                let took = after - before;
-                callback(screen, took);
-                if (frameSpace && typeof frameSpace == 'number' && frameSpace > took) {
-                    await sleep(frameSpace - took);
-                }
-            }
-        })();
-        return {
-            stop() {
-                running = false;
-            }
-        }
     }
 }
 

@@ -17,25 +17,49 @@ export class WidgetComponent implements OnInit, OnDestroy {
 
   updater;
   data;
-  wid;
+  html: string;
+  time: string;
+  lastTime: number;
+  interval;
 
   ngOnInit() {
+    this.interval = setInterval(() => {
+      this.time = this.timeOf();
+    }, 1000);
     this.updater = this.socket.widget(this.scriptID, this.plugin).subscribe(data => {
-      let rendered = this.wid && this.wid(data, this.render);
+      let rendered = this.render(this.html || '', data);
       this.content.nativeElement.innerHTML = rendered;
+      this.lastTime = Date.now();
     });
 
-    this.http.get('/testwidget').subscribe((data: any) => {
-      this.wid = eval(data.tick);
+    this.http.post('/api/widget', { scriptID: this.scriptID, plugin: this.plugin }).subscribe((res: any) => {
+      if (res.success) {
+        this.html = res.content;
+      } else {
+        alert(res.message);
+      }
     });
   }
 
-  private render(vars: any, html: any) {
-    return html.replace(/@(\w+)/, match => vars[match.slice(1)]);
+  private render(html: string, vars: any) {
+    return html.replace(/@(\w+)/g, match => vars[match.slice(1)]);
   }
 
   ngOnDestroy() {
     this.updater.unsubscribe();
+    clearInterval(this.interval);
   }
 
+  timeOf(): string {
+    if (!this.lastTime) {
+      return '-';
+    } else {
+      let ago = Date.now() - this.lastTime;
+      if (ago < 60000) {
+        return (ago / 1000).toFixed(0) + "s ago";
+      } else {
+        return (ago / 3600000).toFixed(0) + "m ago";
+      }
+    }
+  }
 }

@@ -6,3 +6,4 @@ server
     plugin ratings
     plugin popularity
     provide plugiins for
+    only send plugin data to right user

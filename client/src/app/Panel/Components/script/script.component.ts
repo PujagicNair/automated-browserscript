@@ -15,7 +15,7 @@ export class ScriptComponent implements OnInit {
   script;
 
   ngOnInit() {
-    let scriptID = this.route.snapshot.params.id
+    let scriptID = this.route.snapshot.params.id;
     
     this.http.get('/api/script/' + scriptID).subscribe((res: any) => {
       if (res.success) {
@@ -23,5 +23,10 @@ export class ScriptComponent implements OnInit {
         this.script = script;
       }
     });
+  }
+
+  shouldShow(plugin) {
+    let setup = this.script.pluginData[plugin].pluginSetup;
+    return setup.hasPage || setup.hasWidget;
   }
 }

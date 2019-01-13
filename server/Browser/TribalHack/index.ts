@@ -1,24 +1,13 @@
-import { Browser } from "../index";
+import { Browser } from "..";
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import createSession from "./helpers/create_session";
 import loadPlugins from './helpers/plugin_loader';
-import { HackPluginData } from "./IMeta";
+import { IPlugin, IServer, IRuntime, IStatus, PluginRequireData, IStorage, IHackConfig } from "./interfaces";
+import { createModels, TribalHackModel, MTribalHackDocument, StorageModel } from "./models/MHack";
 import providePluginsFor from "./helpers/plugin_require_provider";
-import { Connection } from "mongoose";
-import { createModels, TribalHackModel, MTribalHackDocument } from "./models/MHack";
 
 let sleep = ms => new Promise(r => setTimeout(r, ms));
-
-declare var document : {
-    getElementById(id : string) : anyElement;
-    querySelector(sel : string) : anyElement;
-    querySelectorAll(sel : string) : Array < anyElement >;
-};
-
-export interface anyElement extends HTMLElement {
-    [key : string] : any;
-}
 
 const SERVERS = {
     'de160': { url: 'die-staemme.de/', map: '160' },
@@ -32,56 +21,71 @@ type pluginOutput = (scriptID: string, plugin: string, data: any) => void;
 
 export class TribalHack {
 
+    // statics
+    static SERVERS: IServer[] = [];
+    static PLUGINS: IPlugin[] = [];
+    static RUNNING: IRuntime = {};
+    static defaultOutput: defaultOutput;
+    static widgetOutput: pluginOutput;
+    static pluginOutput: pluginOutput;
+
+    static setup() {
+        return new Promise(async resolve => {
+            createModels();
+            let pluginData = await loadPlugins();      
+            TribalHack.PLUGINS = Object.keys(pluginData).map(key => pluginData[key]);
+            TribalHack.SERVERS = JSON.parse(fs.readFileSync(path.join(__dirname, 'models', 'servers.json')).toString());
+            return resolve();
+        });
+    }
+
+    private static serialize(data: any): TribalHack {
+        let hack = new TribalHack(data.config);
+        Object.keys(data).forEach(key => {
+            hack[key] = data[key];
+        });
+        hack._id = data._id;
+        return hack;
+    }
+
+    static load(objectID: string): Promise<TribalHack> {
+        return new Promise(async resolve => {
+            let doc = await TribalHackModel.findById(objectID);
+            return resolve(TribalHack.serialize(doc));
+        });
+    }
+
+    // props
     _id: string;
+    userID: string;
     villageId: string;
     browser: Browser;
-    server: { url: string, map: string };
+    server: IServer;
     plugins: string[];
-    pluginData: HackPluginData;
-    pluginSetup: any;
-    config;
-    private model: MTribalHackDocument;
+    pluginData: PluginRequireData;
+    config: IHackConfig;
 
-    constructor(input: any) {
+    // private
+    private model: MTribalHackDocument;
+    private _status : IStatus = 'offline';
+
+    // constructor
+    constructor(input: IHackConfig) {
+        
         if (input) {
             this.config = input;
-            this.config.plugin_config = this.config.plugin_config || {};
             this.plugins = Object.keys(this.config.plugins).filter(key => this.config.plugins[key]);
     
             this.server = SERVERS[this.config.server + this.config.map];
             if (!this.server) {
                 throw new Error('Server or Map invalide');
             }
+        } else {
+            throw new Error('Failed to create a script: no config provided')
         }
     }
 
-    static SERVERS;
-    static PLUGINS;
-    static RUNNING: { [key: string]: TribalHack } = {};
-    static defaultOutput: defaultOutput;
-    static widgetOutput: pluginOutput;
-    static pluginOutput: pluginOutput;
-    
-    private _status : string = 'offline';
-    public get status() : string {
-        return this._status;
-    }
-    public set status(v : string) {
-        this._status = v;
-        TribalHack.defaultOutput(this._id, 'status', v);
-    }
-    
-
-    static setup(conn: Connection) {
-        return new Promise(async resolve => {
-            createModels(conn);
-            let pluginData = await loadPlugins();
-            TribalHack.PLUGINS = Object.keys(pluginData).map(key => pluginData[key].meta);
-            TribalHack.SERVERS = JSON.parse(fs.readFileSync(path.join(__dirname, 'models', 'servers.json')).toString());
-            return resolve();
-        });
-    }
-
+    // functions
     setup() {
         return new Promise(async (resolve, reject) => {
             try {
@@ -118,27 +122,45 @@ export class TribalHack {
     tick() {
         return new Promise(async resolve => {
             let data = {};
+            let storage: IStorage = {
+                get: (key: string) => {
+                    return new Promise(async resolve => {
+                        let item = await StorageModel.findOne({ scriptID: this._id, userID: this.userID, key });
+                        return resolve(item.data);
+                    });
+                },
+                set: (key: string, data: any) => {
+                    return new Promise(async resolve => {
+                        let exist = await StorageModel.findOne({ scriptID: this._id, userID: this.userID, key });
+                        if (exist) {
+                            await exist.update({ data });
+                        } else {
+                            await new StorageModel({ key, scriptID: this._id, userID: this.userID, data }).save();
+                        }
+                        return resolve();
+                    });
+                }
+            }
             for (let plugin of this.plugins) {
                 let script = this.pluginData[plugin];
-                let output = await script.run(this, data, this.config.plugin_config[plugin]);
-                if (this.pluginSetup[plugin] && this.pluginSetup[plugin].hasWidget) {
-                    TribalHack.widgetOutput(this._id, plugin, output);
+                if (script.run) {
+                    let output = await script.run(this, storage, providePluginsFor(data, script.requires), null/*this.config.plugin_config[plugin]*/);
+                    if (script.pluginSetup.hasWidget) {
+                        TribalHack.widgetOutput(this._id, plugin, output);
+                    }
+                    if (script.pluginSetup.hasPage) {
+                        TribalHack.pluginOutput(this._id, plugin, output);
+                    }
+                    data[plugin] = output;
                 }
-                if (this.pluginSetup[plugin] && this.pluginSetup[plugin].hasPage) {
-                    TribalHack.pluginOutput(this._id, plugin, output);
-                }
-                data[plugin] = output;
-            }
-            
+            } 
             return resolve();
         });
     }
 
-    forClient() {
-
+    hold() {
+        this.status = 'onhold';
     }
-
-    check() {}
 
     pause() {
         this.stop();
@@ -156,18 +178,9 @@ export class TribalHack {
         this.status = 'ready';
     }
 
-    private static serialize(data: any): TribalHack {
-        let hack = new TribalHack(data.config);
-        Object.keys(data).forEach(key => {
-            hack[key] = data[key];
-        });
-        hack._id = data._id;
-        return hack;
-    }
-
     deserialize(): any {
         let save = {};
-        ['villageId', 'server', 'plugins', 'config', 'status', '_id', 'pluginSetup'].forEach(prop => {
+        ['villageId', 'server', 'plugins', 'config', 'status', '_id', 'pluginData'].forEach(prop => {
             save[prop] = this[prop];
         });
         return JSON.parse(JSON.stringify(save));
@@ -184,11 +197,12 @@ export class TribalHack {
         });
     }
 
-    static load(objectID: string): Promise<TribalHack> {
-        return new Promise(async resolve => {
-            let doc = await TribalHackModel.findById(objectID);
-            return resolve(TribalHack.serialize(doc));
-        });
+    // getter / setter
+    public get status() : IStatus {
+        return this._status;
     }
-
+    public set status(v : IStatus) {
+        this._status = v;
+        TribalHack.defaultOutput(this._id, 'status', v);
+    }
 }

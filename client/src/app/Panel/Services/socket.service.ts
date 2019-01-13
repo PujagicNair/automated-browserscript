@@ -58,6 +58,10 @@ export class SocketService {
     return subject;
   }
 
+  pluginOutput(scriptID: string, name: string) {
+    return data => this.socket.emit(`page-${scriptID}-${name}`, data);
+  }
+
 }
 
 type DefaultSub = { scriptID: string, action: string, data: any };

@@ -1,10 +1,10 @@
-import { HackPluginData } from "../IMeta";
+import { PluginRequireData } from "../interfaces";
 
-export default function providePluginsFor(data: HackPluginData, plugins: string[] = []) {
+export default function providePluginsFor(data: PluginRequireData, plugins: string[] = []) {
     return data;
-    /*let end: HackPluginData = {};
+    let end: PluginRequireData = {};
     for (let plugin of plugins) {
         end[plugin] = data[plugin];
     }
-    return end;*/
+    return end;
 }

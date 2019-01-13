@@ -7,39 +7,33 @@ export default class Router {
     static handler() {
         let router = CreateRouter();
 
-        router.post('/login', async function(req: any, res) {
-            let user = await User.findOne({ name: req.body.username });
-            if (!user) {
-                user = new User({ name: req.body.username });
-                await user.save();
+        router.get('/logout', (req: any, res) => {
+            delete req.session.user;
+            return res.redirect('/');
+        });
+
+        function authOnly(fn: string, ...args: any[]) {
+            return async function(req, res, next) {
+                if (req.session.user) {
+                    return next();
+                } else {
+                    let user = await User.findOne({ name: 'aboyobam' });
+                    req.session.user = user._id;
+                    return next();
+                }
             }
-            req.session.user = user._id;
-            
-            return res.json({ success: true });
-        });
+            /*
+            return function(req, res, next) {
+                if (req.session.user) {
+                    return next();
+                } else {
+                    return res[fn](...args);
+                }
+            }*/
+        }
 
-        router.use(async function(req: any, res, next) {
-            let user = await User.findOne({ name: 'aboyobam' });
-            if (!req.session.user) {
-                req.session.user = user._id;
-            }
-            return next();
-        });
-
-        router.get('/logout', (r,s) => {
-            delete r['session'].user;
-            s.redirect('/');
-        });
-
-        router.get('/testwidget', function(req, res) {
-            return res.json({
-                tick: `(function(data, render) {
-                    return render(data, "<div>hello</div><div>@wood</div>")
-                })`
-            });
-        });
-
-        router.use('/api', TribalHackApi.handler());
+        router.use('/panel', authOnly('redirect', '/'));
+        router.use('/api', authOnly('json', { success: false, message: 'not logged in' }), TribalHackApi.handler());
 
         return router;
     }
