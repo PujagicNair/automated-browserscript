@@ -1,4 +1,3 @@
-import { Browser } from "..";
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import createSession from "./helpers/create_session";
@@ -6,6 +5,7 @@ import loadPlugins from './helpers/plugin_loader';
 import { IPlugin, IServer, IRuntime, IStatus, PluginRequireData, IStorage, IHackConfig } from "./interfaces";
 import { createModels, TribalHackModel, MTribalHackDocument, StorageModel } from "./models/MHack";
 import providePluginsFor from "./helpers/plugin_require_provider";
+import { Browser } from "../Browser/browser2";
 
 let sleep = ms => new Promise(r => setTimeout(r, ms));
 
@@ -89,7 +89,7 @@ export class TribalHack {
     setup() {
         return new Promise(async (resolve, reject) => {
             try {
-                this.browser = new Browser(this.config.browserOptions);
+                this.browser = new Browser();
                 await this.browser.start();
                 await loadPlugins(this);
                 await createSession(this);
@@ -105,7 +105,6 @@ export class TribalHack {
             } catch (error) {
                 return reject(error);
             }
-
         });
     }
 

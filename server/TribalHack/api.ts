@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { TribalHack } from ".";
-import { User } from "../../Models/user";
+import { User } from "../Models/user";
 import { TribalHackModel } from "./models/MHack";
 
 export class TribalHackApi {
@@ -16,7 +16,7 @@ export class TribalHackApi {
                 sc.start();   
             });
         })();
-
+        
 
         TribalHack.defaultOutput = function(scriptID: string, action: string, data: any) {
             console.log('default', scriptID, action, data);

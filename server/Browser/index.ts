@@ -1,5 +1,5 @@
 import * as phantom from 'phantom';
-import { IBrowserOptions } from './TribalHack/interfaces';
+import { IBrowserOptions } from '../TribalHack/interfaces';
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 

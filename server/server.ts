@@ -9,9 +9,9 @@ import { Server } from 'http';
 import socketIO from 'socket.io';
 import Router from './Handlers/router';
 import Logger from './Handlers/logger';
-import { TribalHack } from './Browser/TribalHack';
-import { createUserModel, User } from './Models/user';
-import { TribalHackApi } from './Browser/TribalHack/api';
+import { TribalHack } from './TribalHack';
+import { createUserModel } from './Models/user';
+import { TribalHackApi } from './TribalHack/api';
 import { Auth } from './Handlers/auth';
 
 (async () => {

@@ -1,5 +1,5 @@
 import { Router as CreateRouter } from 'express'
-import { TribalHackApi } from '../Browser/TribalHack/api';
+import { TribalHackApi } from '../TribalHack/api';
 import { User } from '../Models/user';
 
 export default class Router {

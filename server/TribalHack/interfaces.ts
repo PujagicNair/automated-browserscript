@@ -20,7 +20,7 @@ export interface IPlugin {
             ) => void,
             output: (data) => void,
             storage: IStorage
-        ) => Promise<void>;
+        ) => void;
         client: (
             window: Window,
             input: (
@@ -44,7 +44,7 @@ export interface IExtension {
                 callback: (data) => void
             ) => void,
             output: (data) => void
-        ) => Promise<void>;
+        ) => void;
         client?: (
             window: Window,
             input: (
