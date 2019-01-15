@@ -20,7 +20,7 @@ export interface IPlugin {
             ) => void,
             output: (data) => void,
             storage: IStorage
-        ) => void;
+        ) => () => void;
         client: (
             window: Window,
             input: (
