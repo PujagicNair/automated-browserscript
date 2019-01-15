@@ -1,4 +1,4 @@
-import { IPlugin } from "../../interfaces";
+import { IPlugin } from "../interfaces";
 
 
 const plugin: IPlugin = {
@@ -8,7 +8,8 @@ const plugin: IPlugin = {
     requires: [],
     pluginSetup: {
         hasPage: true,
-        hasWidget: false
+        hasWidget: false,
+        hasTicks: false
     },
     page: 'loading...',
     pageControl: {

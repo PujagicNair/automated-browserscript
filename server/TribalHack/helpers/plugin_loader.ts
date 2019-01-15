@@ -10,12 +10,12 @@ export default function loadPlugins(hack: TribalHack): Promise<void>;
 export default function loadPlugins(hack?: TribalHack): Promise<any> {
     return new Promise(async (resolve, reject) => {
         
-        let pluginFiles = fs.readdirSync(path.join(__dirname, '..', 'functions'));
+        let pluginFiles = fs.readdirSync(path.join(__dirname, '..', 'plugins'));
         
         let plugins: PluginRequireData = {};
 
         for (let file of pluginFiles) {
-            let script: IPlugin = await import('../functions/' + file);
+            let script: IPlugin = await import('../plugins/' + file.slice(0, -3));
             plugins[script.name] = script;
         }
 

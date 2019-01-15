@@ -6,6 +6,7 @@ import { IPlugin, IServer, IRuntime, IStatus, PluginRequireData, IStorage, IHack
 import { createModels, TribalHackModel, MTribalHackDocument, StorageModel } from "./models/MHack";
 import providePluginsFor from "./helpers/plugin_require_provider";
 import { Browser } from "../Browser/browser2";
+import getStorage from './helpers/get_storage';
 
 let sleep = ms => new Promise(r => setTimeout(r, ms));
 
@@ -121,28 +122,10 @@ export class TribalHack {
     tick() {
         return new Promise(async resolve => {
             let data = {};
-            let storage: IStorage = {
-                get: (key: string) => {
-                    return new Promise(async resolve => {
-                        let item = await StorageModel.findOne({ scriptID: this._id, userID: this.userID, key });
-                        return resolve(item.data);
-                    });
-                },
-                set: (key: string, data: any) => {
-                    return new Promise(async resolve => {
-                        let exist = await StorageModel.findOne({ scriptID: this._id, userID: this.userID, key });
-                        if (exist) {
-                            await exist.update({ data });
-                        } else {
-                            await new StorageModel({ key, scriptID: this._id, userID: this.userID, data }).save();
-                        }
-                        return resolve();
-                    });
-                }
-            }
+            let storage = getStorage(this._id, this.userID);
             for (let plugin of this.plugins) {
-                let script = this.pluginData[plugin];
-                if (script.run) {
+                let script = this.pluginData[plugin];        
+                if (script.pluginSetup.hasTicks) {
                     let output = await script.run(this, storage, providePluginsFor(data, script.requires), null/*this.config.plugin_config[plugin]*/);
                     if (script.pluginSetup.hasWidget) {
                         TribalHack.widgetOutput(this._id, plugin, output);
@@ -155,6 +138,12 @@ export class TribalHack {
             } 
             return resolve();
         });
+    }
+
+    gotoScreen(screen: string) {
+        if (this.screen != screen) {
+            return this.browser.open(`${this.config.server}${this.config.map}.${this.server.url}game.php?village=${this.villageId}&screen=${screen}`);
+        }
     }
 
     hold() {
@@ -203,5 +192,13 @@ export class TribalHack {
     public set status(v : IStatus) {
         this._status = v;
         TribalHack.defaultOutput(this._id, 'status', v);
+    }
+
+    get screen(): string {
+        try {
+            return this.browser.url.match(/screen=(\w+)/)[1];
+        } catch (e) {
+            return 'ERROR';
+        }
     }
 }

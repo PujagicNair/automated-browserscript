@@ -1,4 +1,4 @@
-import { IPlugin } from "../../interfaces";
+import { IPlugin } from "../interfaces";
 
 const plugin: IPlugin = {
     name: 'recource-sync',
@@ -7,7 +7,8 @@ const plugin: IPlugin = {
     requires: [],
     pluginSetup: {
         hasPage: false,
-        hasWidget: true
+        hasWidget: true,
+        hasTicks: true
     },
     widget: `
         <table>

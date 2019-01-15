@@ -8,11 +8,12 @@ import { SocketService } from '../../Services/socket.service';
   templateUrl: './script.component.html',
   styleUrls: ['./script.component.scss']
 })
-export class ScriptComponent implements OnInit {
+export class ScriptComponent implements OnInit, OnDestroy {
 
-  constructor(private route: ActivatedRoute, private http: HttpClient) { }
+  constructor(private route: ActivatedRoute, private http: HttpClient, private socket: SocketService) { }
 
   script;
+  defaultUpdater;
 
   ngOnInit() {
     let scriptID = this.route.snapshot.params.id;
@@ -23,10 +24,24 @@ export class ScriptComponent implements OnInit {
         this.script = script;
       }
     });
+
+    this.defaultUpdater = this.socket.default().subscribe(data => {
+      if (data.scriptID == this.script._id && data.action == 'status') {
+        this.script.status = data.data;
+      }
+    });
   }
 
   shouldShow(plugin) {
     let setup = this.script.pluginData[plugin].pluginSetup;
     return setup.hasPage || setup.hasWidget;
+  }
+
+  editPluginOrder() {
+    // TODO
+  }
+
+  ngOnDestroy() {
+    this.defaultUpdater.unsubscribe();
   }
 }

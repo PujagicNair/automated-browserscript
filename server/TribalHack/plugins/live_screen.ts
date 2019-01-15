@@ -1,4 +1,4 @@
-import { IPlugin } from "../../interfaces";
+import { IPlugin } from "../interfaces";
 let sleep = ms => new Promise(r => setTimeout(r, ms));
 
 const plugin: IPlugin = {
@@ -9,7 +9,8 @@ const plugin: IPlugin = {
     page: '<canvas id="cnv" width="1003" height="730"></canvas>',
     pluginSetup: {
         hasWidget: false,
-        hasPage: true
+        hasPage: true,
+        hasTicks: false
     },
     pageControl: {
         pauseTicks: true,

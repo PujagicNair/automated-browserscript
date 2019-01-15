@@ -11,7 +11,7 @@ export class Browser {
 
     start() {
         return new Promise(async resolve => {
-            this.browser = await puppeteer.launch({ headless: true, defaultViewport: { width: 1003, height: 730 }});
+            this.browser = await puppeteer.launch({ headless: false, defaultViewport: { width: 1003, height: 730 }});
             this.page = (await this.browser.pages())[0];
             await this.page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36');
             return resolve();
@@ -71,9 +71,9 @@ export class Browser {
         }
     }
 
-    selectMultiple<T = any>(selector: string, output: string): Promise<T>;
-    selectMultiple<T = any>(selector: string, output: string[]): Promise<T>;
-    selectMultiple<T = any>(selector: string, output: string | string[]): Promise<T | T[]> {
+    selectMultiple<T = any>(selector: string, output: string): Promise<T[]>;
+    selectMultiple<T = any>(selector: string, output: string[]): Promise<T[]>;
+    selectMultiple<T = any>(selector: string, output: string | string[]): Promise<T[]> {
         if (typeof selector == "string" && typeof output == "string") {
             return this.page.evaluate(({ selector, output }) => {
                 let out = [];

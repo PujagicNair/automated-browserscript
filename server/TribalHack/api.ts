@@ -2,6 +2,9 @@ import { Router } from "express";
 import { TribalHack } from ".";
 import { User } from "../Models/user";
 import { TribalHackModel } from "./models/MHack";
+import getStorage from "./helpers/get_storage";
+
+let runpage;
 
 export class TribalHackApi {
 
@@ -70,8 +73,9 @@ export class TribalHackApi {
                 hack.userID = user._id;
                 user.scripts.push(model._id);
                 await user.save();
+                await hack.gotoScreen('main');
                 hack.start();
-                return res.json({ success: true, message: 'ready to lunch' });
+                return res.json({ success: true });
             } catch (error) {
                 await hack.browser.exit();
                 return res.json({ success: false, message: error });
@@ -139,7 +143,6 @@ export class TribalHackApi {
                 return res.json({ success: false, message: 'plugin doesnt have a page' });
             }
 
-
             if (meta.pageControl) {
                 let handlers: Function[] = [];
                 let input = callback => handlers.push(callback);
@@ -147,7 +150,9 @@ export class TribalHackApi {
                 if (meta.pageControl.pauseTicks) {
                     script.hold();
                 }
-                meta.pageControl.server(script, input, output, null);
+
+                let storage = getStorage(scriptID, user._id);
+                runpage = meta.pageControl.server(script, input, output, storage);
                 global.sockets[user._id].on('page-' + scriptID + '-' + plugin, function(data) {
                     handlers.forEach(handler => handler(data)); 
                 });
@@ -175,8 +180,13 @@ export class TribalHackApi {
                 return res.json({ success: false, message: 'plugin not found' });
             }
 
+            if (runpage) {
+                runpage();
+                runpage = undefined;
+            }
+
             if (meta.pageControl && meta.pageControl.pauseTicks) {
-                //script.start();
+                script.start();
             }
             
             return res.json({});

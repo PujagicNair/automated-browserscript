@@ -7,6 +7,7 @@ export interface IPlugin {
     pluginSetup: {
         hasWidget: boolean;
         hasPage: boolean;
+        hasTicks: boolean;
     }
     config: IConfigValue[];
     requires: string[];
@@ -20,7 +21,7 @@ export interface IPlugin {
             ) => void,
             output: (data) => void,
             storage: IStorage
-        ) => () => void;
+        ) => void | (() => void);
         client: (
             window: Window,
             input: (
@@ -39,11 +40,11 @@ export interface IExtension {
     pageControl: {
         server?: (
             hack: TribalHack,
-            config: any,
             input: (
                 callback: (data) => void
             ) => void,
-            output: (data) => void
+            output: (data) => void,
+            storage: IStorage
         ) => void;
         client?: (
             window: Window,
@@ -60,7 +61,7 @@ export interface ISetup {
 }
 
 export interface IStorage {
-    get(name: string): Promise<any>;
+    get<T = any>(name: string, defaultValue?: T): Promise<T>;
     set(name: string, data: any): Promise<void>;
 }
 
