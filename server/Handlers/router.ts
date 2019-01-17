@@ -17,9 +17,7 @@ export default class Router {
                 if (req.session.user) {
                     return next();
                 } else {
-                    let user = await User.findOne({ name: 'aboyobam' });
-                    req.session.user = user._id;
-                    return next();
+                    return res[fn](...args);
                 }
             }
             /*

@@ -26,8 +26,6 @@ const plugin: IPlugin = {
                         });
                     }, 3000);
                 } else if (data.type == "click") {
-                    console.log('click', data.selector);
-                    
                     await hack.browser.page.evaluate((sel) => {
                         document.querySelector(sel).click();
                     }, data.selector);

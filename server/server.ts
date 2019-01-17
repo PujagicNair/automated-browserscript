@@ -26,7 +26,17 @@ import { Auth } from './Handlers/auth';
     global.connection = mongodb.connection;
     
     createUserModel();
+
     await TribalHack.setup();
+    if (process.argv[2] == '--prod') {
+        let collections = mongodb.connection.collections;
+        for (let key of Object.keys(collections)) {
+            let collection = collections[key];
+            await collection.drop();
+        }
+        console.log('dropped all datasets');
+    }
+
     TribalHackApi.setup();
 
     let sess = session({

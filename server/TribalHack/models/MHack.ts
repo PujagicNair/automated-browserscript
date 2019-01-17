@@ -12,7 +12,7 @@ export function createModels() {
         pluginSetup: {
             type: Schema.Types.Mixed,
             default: {}
-        }
+        },
     });
 
     let SStorage = new Schema({
@@ -25,7 +25,8 @@ export function createModels() {
             type: Schema.Types.ObjectId,
             ref: 'scripts'
         },
-        data: Schema.Types.Mixed
+        data: Schema.Types.Mixed,
+        plugin: String
     });
 
     TribalHackModel = global.connection.model('script', STribalHack);
@@ -48,6 +49,7 @@ interface IStorage {
     scriptID: string;
     userID: string;
     data: any;
+    plugin: string;
 }
 
 interface MStorage extends Document, IStorage {

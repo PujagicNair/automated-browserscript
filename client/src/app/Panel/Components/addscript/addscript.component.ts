@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 declare var $;//: JQueryStatic;
 
@@ -17,7 +18,7 @@ interface Step {
 })
 export class AddscriptComponent implements OnInit {
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private router: Router) { }
 
   data: any;
   userdata: any;
@@ -110,8 +111,9 @@ export class AddscriptComponent implements OnInit {
 
   submit() {
     this.http.post('/api/create', this.userdata).subscribe((res: any) => {
-      console.log(res);
-      
+      if (res.success) {
+        this.router.navigateByUrl('/panel');
+      }
       this.output = res.message;
     });
   }

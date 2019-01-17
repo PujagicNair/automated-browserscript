@@ -26,7 +26,7 @@ export class ScriptComponent implements OnInit, OnDestroy {
     });
 
     this.defaultUpdater = this.socket.default().subscribe(data => {
-      if (data.scriptID == this.script._id && data.action == 'status') {
+      if (this.script && data.scriptID == this.script._id && data.action == 'status') {
         this.script.status = data.data;
       }
     });

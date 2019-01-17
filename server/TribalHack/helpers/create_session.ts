@@ -66,7 +66,6 @@ export default function createSession(hack: TribalHack): Promise<void> {
         }
 
         hack.villageId = villageId.value;
-        
         return resolve();
     });
 }

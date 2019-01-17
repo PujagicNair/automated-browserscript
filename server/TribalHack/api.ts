@@ -27,7 +27,7 @@ export class TribalHackApi {
         }
 
         TribalHack.widgetOutput = function(scriptID: string, plugin: string, data: any) {
-            console.log('widget', scriptID, plugin, data);
+            //console.log('widget', scriptID, plugin, data);
             global.io.emit('script-widget', scriptID, plugin, data);
         }
 
@@ -73,7 +73,6 @@ export class TribalHackApi {
                 hack.userID = user._id;
                 user.scripts.push(model._id);
                 await user.save();
-                await hack.gotoScreen('main');
                 hack.start();
                 return res.json({ success: true });
             } catch (error) {
@@ -151,7 +150,7 @@ export class TribalHackApi {
                     script.hold();
                 }
 
-                let storage = getStorage(scriptID, user._id);
+                let storage = getStorage(scriptID, user._id, plugin);
                 runpage = meta.pageControl.server(script, input, output, storage);
                 global.sockets[user._id].on('page-' + scriptID + '-' + plugin, function(data) {
                     handlers.forEach(handler => handler(data)); 
@@ -165,6 +164,10 @@ export class TribalHackApi {
             let user = await User.findById(req.session.user);
 
             let scriptID = req.body.scriptID, plugin = req.body.plugin;
+
+            if (global.sockets[user._id]) {
+                global.sockets[user._id].off('page-' + scriptID + '-' + plugin);
+            }
             
             if (user.scripts.indexOf(scriptID) == -1) {
                 return res.json({ success: false, message: 'script not assignt to user' });

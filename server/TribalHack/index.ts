@@ -122,8 +122,8 @@ export class TribalHack {
     tick() {
         return new Promise(async resolve => {
             let data = {};
-            let storage = getStorage(this._id, this.userID);
             for (let plugin of this.plugins) {
+                let storage = getStorage(this._id, this.userID, plugin);
                 let script = this.pluginData[plugin];        
                 if (script.pluginSetup.hasTicks) {
                     let output = await script.run(this, storage, providePluginsFor(data, script.requires), null/*this.config.plugin_config[plugin]*/);
