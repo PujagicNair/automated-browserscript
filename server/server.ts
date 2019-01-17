@@ -41,7 +41,7 @@ import { Auth } from './Handlers/auth';
 
     let sess = session({
         secret: 'keyboard cat',
-        resave: true,
+        resave: false,
         saveUninitialized: true
     });
 

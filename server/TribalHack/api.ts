@@ -165,9 +165,9 @@ export class TribalHackApi {
 
             let scriptID = req.body.scriptID, plugin = req.body.plugin;
 
-            if (global.sockets[user._id]) {
+            /*if (global.sockets[user._id]) {
                 global.sockets[user._id].off('page-' + scriptID + '-' + plugin);
-            }
+            }*/
             
             if (user.scripts.indexOf(scriptID) == -1) {
                 return res.json({ success: false, message: 'script not assignt to user' });

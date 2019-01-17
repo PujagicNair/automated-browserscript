@@ -1,4 +1,5 @@
 import { IPlugin } from "../interfaces";
+import sleep from "../helpers/sleep";
 
 
 const plugin: IPlugin = {
@@ -26,12 +27,24 @@ const plugin: IPlugin = {
                         });
                     }, 3000);
                 } else if (data.type == "click") {
-                    await hack.browser.page.evaluate((sel) => {
+                    hack.browser.page.evaluate((sel) => {
                         document.querySelector(sel).click();
                     }, data.selector);
-                    setTimeout(() => {
-                        sendPage();
-                    }, 500);
+                    await new Promise(async resolve => {
+                        let resolved = false;
+                        hack.browser.page.once('request', async function() {
+                            resolved = true;
+                            await hack.browser.page.waitForNavigation();
+                            return resolve();
+                        });
+                        await sleep(800);
+                        if (!resolved) {
+                            resolved = true;
+                            return resolve();
+                        }
+                    });
+                    //await sleep(1000);
+                    await sendPage();
                 } else if (data.type == "input") {
                     await hack.browser.page.evaluate(({ selector, value }) => {
                         document.querySelector(selector).value = value;
