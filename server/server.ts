@@ -3,8 +3,9 @@ import * as bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import * as path from 'path';
 import mongoose from 'mongoose';
-import session from 'express-session';
+//import session from 'express-session';
 import sharedSessions from 'express-socket.io-session';
+import cookieSession from 'cookie-session';
 import { Server } from 'http';
 import socketIO from 'socket.io';
 import Router from './Handlers/router';
@@ -39,11 +40,20 @@ import { Auth } from './Handlers/auth';
 
     TribalHackApi.setup();
 
-    let sess = session({
+    /*let sess = session({
         secret: 'keyboard cat',
         resave: false,
         saveUninitialized: true
+    });*/
+
+    let sess = cookieSession({
+        name: 'session',
+        keys: ['hello', 'mi name', 'arber'],
+      
+        // Cookie Options
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
     });
+
 
     // http runners
     app.use(cookieParser());

@@ -26,24 +26,25 @@ const plugin: IPlugin = {
                             return output({ type: "selector", selector: "#" + entry.id, prop: 'innerText', value: entry.innerText });
                         });
                     }, 3000);
+                    await sendPage();
                 } else if (data.type == "click") {
                     hack.browser.page.evaluate((sel) => {
                         document.querySelector(sel).click();
                     }, data.selector);
                     await new Promise(async resolve => {
                         let resolved = false;
-                        hack.browser.page.once('request', async function() {
-                            resolved = true;
-                            await hack.browser.page.waitForNavigation();
-                            return resolve();
-                        });
-                        await sleep(800);
-                        if (!resolved) {
+                        let loadListen = async function() {
                             resolved = true;
                             return resolve();
                         }
+                        hack.browser.page.once('load', loadListen);
+                        await sleep(500);
+                        if (!resolved) {
+                            resolved = true;
+                            hack.browser.page.removeListener('load', loadListen);
+                            return resolve();
+                        }
                     });
-                    //await sleep(1000);
                     await sendPage();
                 } else if (data.type == "input") {
                     await hack.browser.page.evaluate(({ selector, value }) => {
@@ -52,12 +53,10 @@ const plugin: IPlugin = {
                 }
             });
             async function sendPage() {
-                let content: string = await hack.browser.page.evaluate(() => document.all[0].innerHTML);
-                content = content.replace(/<script[\s\S]+?<\/script>/, '');
-                output({ type: "html", content });
+                let html: string = await hack.browser.page.evaluate(() => document.all[0].innerHTML);
+                html = html.replace(/<script[\s\S]+?<\/script>/g, '');
+                output({ type: "html", content: html });
             }
-
-            sendPage();
             return () => {
                 clearInterval(interval);
             };
@@ -95,11 +94,11 @@ const plugin: IPlugin = {
                         });
                         
                     });
-                    output({ type: 'ready' });
                 } else if (data.type == "selector") {
                     window.document.querySelector(data.selector)[data.prop] = data.value;
                 }
             });
+            output({ type: 'ready' });
         }
     }
 }
