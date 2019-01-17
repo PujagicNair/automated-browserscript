@@ -3,10 +3,10 @@
   <!-- Scripts -->
   <div class="block">
     <div class="title">
-      Scripts
+      Scripte Übersicht
     </div>
-    <div *ngIf="scripts.length == 0">
-      No scripts availble
+    <div *ngIf="scripts.length == 0" class="info-box no-scripts font">
+      Keine Scripte verfügbar
     </div>
     <div class="script" *ngFor="let script of scripts">
       <div class="name">{{ script.config.username }} ({{ script.config.server }}, {{ script.config.map }})</div>
@@ -20,8 +20,11 @@
       <ul class="effects">
         <li *ngFor="let plugin of script.plugins">{{ plugin }}</li>
       </ul>
-      <a [routerLink]="'script/' + script._id">more details</a>
+      <a [routerLink]="'script/' + script._id">Script Details</a>
     </div>
-    <a routerLink="addscript">Add Script</a>
+    <div class="center">
+      <button class="btn spaced" routerLink="addscript">neues Script hinzufügen</button>
+    </div>
+
   </div>
 </div>

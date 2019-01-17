@@ -11,17 +11,10 @@ export class RootComponent implements OnInit {
   constructor(private socket: SocketService) { }
 
   connected: boolean = false;
-  script: string;
-  private loaded: boolean = false;
 
   ngOnInit() {
-    this.loaded = false;
     this.socket.on('disconnect').subscribe(() => this.connected = false);
     this.socket.on('connect').subscribe(() => this.connected = true);
-    this.socket.on('init').subscribe(data => {
-      this.loaded = true;
-      this.script = data.status;
-    });
   }
 
   imgs = {
