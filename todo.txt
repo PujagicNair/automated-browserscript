@@ -1,9 +1,13 @@
 client
     auto select plugin requires
     browser settings (ticks, load images)
+    disable create button till its done
 
 server
     plugin ratings
     plugin popularity
     provide plugiins for
-    only send plugin data to right user
+    child_process
+    pause / continue / restart
+    more beautifull interface
+    body type checks

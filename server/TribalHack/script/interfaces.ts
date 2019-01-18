@@ -1,7 +1,33 @@
-import { TribalHack } from "./index";
+import { Hack } from "./hack";
+
+export interface IApi {
+    on(url: string, callback: IApiListenerCallback): void;
+}
+
+export interface IApiListener {
+    url: string;
+    callback: IApiListenerCallback;
+}
+
+
+enum res { good = 'true' }
+export interface IApiListenerCallback {
+    (res: (data: IApiResponseData) => res, body?: any): res | Promise<res>;
+}
+
+export interface IApiResponseData {
+    success: boolean;
+    [key: string]: any;
+}
+
+export interface ISocket {
+    on(action: string, callback: (data?: any) => void): void;
+    emit(action: string, data?: any): void;
+    off(action: string, callback?: (data?: any) => void): void;
+}
 
 export interface IPlugin {
-    run?(hack: TribalHack, storage: IStorage, requires: IPluginOutputMap, config: IPluginConfig): Promise<IPluginOutput>;
+    run?(hack: Hack, storage: IStorage, requires: IPluginOutputMap, config: IPluginConfig): Promise<IPluginOutput>;
     name: string;
     description: string;
     pluginSetup: {
@@ -15,7 +41,7 @@ export interface IPlugin {
     pageControl?: {
         pauseTicks: boolean;
         server: (
-            hack: TribalHack,
+            hack: Hack,
             input: (
                 callback: (data) => void
             ) => void,
@@ -33,10 +59,27 @@ export interface IPlugin {
     widget?: string;
 }
 
-export interface ISocket {
-    on(action: string, callback: (data?: any) => void): void;
-    emit(action: string, data?: any): void;
-    off(action: string, callback?: (data?: any) => void): void;
+export interface IExtension {
+    name: string;
+    description: string;
+    plugin: string;
+    pageControl: {
+        server?: (
+            hack: Hack,
+            input: (
+                callback: (data) => void
+            ) => void,
+            output: (data) => void,
+            storage: IStorage
+        ) => void;
+        client?: (
+            window: Window,
+            input: (
+                callback: (data) => void
+            ) => void,
+            output: (data) => void
+        ) => void;
+    };
 }
 
 export interface ISetup {
@@ -66,31 +109,19 @@ interface IPluginConfig {
 }
 
 export interface IHackConfig {
-    server: string;
+    serverCode: string;
+    serverUrl: string;
     map: string;
-    plugins: {
-        [name: string]: boolean;
-    };
+    plugins: string[];
     plugin_config: {
         [name: string]: IPluginConfig;
     }
     username: string;
     password: string;
-    browserOptions: IBrowserOptions;
-    ticks: string;
-}
-
-export interface IBrowserOptions {
-    loadImages: 'yes' | 'no';
-}
-
-export interface IServer {
-    url: string;
-    map: string;
 }
 
 export interface IRuntime {
-    [_id: string]: TribalHack;
+    [_id: string]: Hack;
 }
 
 export type IStatus = 'offline' | 'ready' | 'running' | 'onhold' | 'paused';
@@ -105,4 +136,7 @@ export interface IPluginOutput {
 
 export interface IPluginOutputMap {
     [name: string]: IPluginOutput;
-} 
+}
+
+export type DefaultOutput = (action: string, data: any) => void;
+export type PluginOutput = (plugin: string, data: any) => void;
