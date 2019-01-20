@@ -1,0 +1,34 @@
+<div class="script" *ngIf="script">
+    <table>
+        <tr>
+            <th>Overview</th>
+        </tr>
+        <tr>
+            <td>status</td>
+            <td>{{ script.status }}</td>
+        </tr>
+        <tr>
+            <td>username</td>
+            <td>{{ script.config.username }}</td>
+        </tr>
+        <tr>
+            <td>id</td>
+            <td>{{ script._id }}</td>
+        </tr>
+    </table>
+
+    <div>Plugins</div>
+    <div *ngFor="let plugin of script.config.plugins">
+        <div class="plugin" *ngIf="shouldShow(plugin)">
+            <div class="header">{{ plugin }}</div>
+            <div class="widget" *ngIf="script.pluginData[plugin].pluginSetup.hasWidget">
+                <widget [scriptID]="script._id" [plugin]="plugin"></widget>
+            </div>
+            <div class="page" *ngIf="script.pluginData[plugin].pluginSetup.hasPage">
+                <a [routerLink]="'plugin/' + plugin">Goto Plugin Page</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<router-outlet></router-outlet>

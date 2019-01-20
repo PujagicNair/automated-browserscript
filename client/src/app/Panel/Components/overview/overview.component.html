@@ -1,0 +1,30 @@
+<div class="content">
+
+  <!-- Scripts -->
+  <div class="block">
+    <div class="title">
+      Scripte Übersicht
+    </div>
+    <div *ngIf="scripts.length == 0" class="info-box no-scripts font">
+      Keine Scripte verfügbar
+    </div>
+    <div class="script" *ngFor="let script of scripts">
+      <div class="name">{{ script.username }} ({{ script.serverCode }})</div>
+      <table>
+        <tr>
+          <td>Status</td>
+          <td>{{ script.status }}</td>
+        </tr>
+      </table>
+      <div>Plugins</div>
+      <ul class="effects">
+        <li *ngFor="let plugin of script.plugins">{{ plugin }}</li>
+      </ul>
+      <a [routerLink]="'script/' + script._id">Script Details</a>
+    </div>
+    <div class="center">
+      <button class="btn spaced" routerLink="addscript">neues Script hinzufügen</button>
+    </div>
+
+  </div>
+</div>
