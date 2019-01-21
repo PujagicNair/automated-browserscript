@@ -27,22 +27,27 @@ export class WidgetComponent implements OnInit, OnDestroy {
       this.time = this.timeOf();
     }, 1000);
     this.updater = this.socket.widget(this.scriptID, this.plugin).subscribe(data => {
-      let rendered = this.render(this.html || '', data);
-      this.content.nativeElement.innerHTML = rendered;
-      this.lastTime = Date.now();
+      this.apply(data, Date.now());
     });
 
     this.http.post('/api/widget', { scriptID: this.scriptID, plugin: this.plugin }).subscribe((res: any) => {
       if (res.success) {
         this.html = res.content;
+        this.apply(res.data, res.time);
       } else {
         alert(res.message);
       }
     });
   }
 
+  private apply(data, time) {
+    let rendered = this.render(this.html || '', data);
+    this.content.nativeElement.innerHTML = rendered;
+    this.lastTime = time;
+  }
+
   private render(html: string, vars: any) {
-    return html.replace(/@(\w+)/g, match => vars[match.slice(1)]);
+    return html.replace(/@(\w+)/g, match => (vars[match.slice(1)] || '-'));
   }
 
   ngOnDestroy() {

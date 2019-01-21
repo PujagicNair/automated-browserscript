@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "@types/fs-extra": "^5.0.4",
     "@types/mongoose": "^5.3.7",
     "@types/puppeteer": "1.11.1",
     "@types/request": "^2.48.1",

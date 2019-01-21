@@ -1,8 +1,9 @@
 import { IPlugin } from "../interfaces";
-import sleep from "../helpers/sleep";
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 
 const plugin: IPlugin = {
+    
     name: 'live-content',
     description: 'See the browsers content live',
     requires: [],

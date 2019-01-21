@@ -2,9 +2,11 @@ import express from 'express';
 import * as bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import * as fs from 'fs-extra';
+import * as path from 'path';
 import socketIO from 'socket.io';
 import { Server } from 'http';
 import { Script } from './script';
+import multer from 'multer';
 
 const integrity = fs.readFileSync('.integrity').toString();
 let app = express();
@@ -29,6 +31,7 @@ io.on('connection', (socket) => {
     }
 });
 
+
 app.use(function(req, res, next){
     if (req.header('integrity') != integrity) {
         return res.json({ success: false });
@@ -37,12 +40,23 @@ app.use(function(req, res, next){
     }
 });
 
+let pluginsFolder = path.join(__dirname, 'script', 'plugins');
+let uploadFolder = path.join(__dirname, 'plugin_upload')
+let upload = multer({ storage: multer.diskStorage({ destination: pluginsFolder, filename: (_req, file, callback) => callback(null, file.originalname) })});
+
+app.post('/plugins', upload.array('file'), function(req, res) {
+    return res.json({ success: true });
+});
+
 app.get('/ping', function(_, res) {
-    return res.json(Date.now());
+    return res.json({ success: true, time: Date.now() });
 });
 
 app.post('/run', async function(req, res) {
     let name = req.query.name;
+    if (SCRIPTS[name]) {
+        return res.json({ success: true });
+    }
     let script = new Script(req.body);
 
     // IO

@@ -35,7 +35,7 @@ export class ScriptComponent implements OnInit, OnDestroy {
   }
 
   shouldShow(plugin) {
-    let setup = this.script.pluginData[plugin].pluginSetup;
+    let setup = this.script.pluginSetup[plugin];
     return setup.hasPage || setup.hasWidget;
   }
 

@@ -2,6 +2,7 @@ import { IPlugin } from "../interfaces";
 
 
 const plugin: IPlugin = {
+    
     name: 'build',
     description: 'Used for other Plugins to automated build things (doesnt support premium with more than 2 in build queue)',
     requires: ['building-queue'],

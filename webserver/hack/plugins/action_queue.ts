@@ -2,6 +2,7 @@ import { IPlugin } from "../interfaces";
 
 
 const plugin: IPlugin = {
+    
     name: 'action-queue',
     description: 'give the script a list of things it has todo',
     requires: ['build', 'building-queue'],

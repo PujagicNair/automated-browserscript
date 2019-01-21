@@ -1,0 +1,8 @@
+! plugin sync
+! scriptserver auto reconnect
+create script module adjustments
+! only start if script is not running already
+api only send to right socket
+~api make work again
+chalk & serious logs
+STYLEEEE
