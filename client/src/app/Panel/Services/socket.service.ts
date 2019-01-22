@@ -59,7 +59,11 @@ export class SocketService {
   }
 
   pluginOutput(scriptID: string, name: string) {
-    return data => this.socket.emit(`page-${scriptID}-${name}`, data);
+    return data => {
+      this.socket.emit(`page-${scriptID}-${name}`, data);
+      console.log('send data to', `page-${scriptID}-${name}`, data);
+      
+    }
   }
 
 }

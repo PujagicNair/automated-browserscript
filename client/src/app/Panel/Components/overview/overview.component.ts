@@ -20,6 +20,8 @@ export class OverviewComponent implements OnInit, OnDestroy {
     });
 
     this.updater = this.socket.default().subscribe(data => {
+      console.log('default output', data);
+      
       let script = this.scripts.find(script => {
         return script._id == data.scriptID;
       });

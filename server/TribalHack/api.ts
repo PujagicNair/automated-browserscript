@@ -22,7 +22,7 @@ export class TribalHackApi {
         
 
         TribalHack.defaultOutput = function(scriptID: string, action: string, data: any) {
-            console.log('default', scriptID, action, data);
+            //console.log('default', scriptID, action, data);
             global.io.emit('script-default', scriptID, action, data);
         }
 

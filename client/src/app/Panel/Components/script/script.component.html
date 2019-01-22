@@ -9,7 +9,7 @@
         </tr>
         <tr>
             <td>username</td>
-            <td>{{ script.config.username }}</td>
+            <td>{{ script.username }}</td>
         </tr>
         <tr>
             <td>id</td>
@@ -21,10 +21,10 @@
     <div *ngFor="let plugin of script.plugins">
         <div class="plugin" *ngIf="shouldShow(plugin)">
             <div class="header">{{ plugin }}</div>
-            <div class="widget" *ngIf="script.pluginData[plugin].pluginSetup.hasWidget">
+            <div class="widget" *ngIf="script.pluginSetup[plugin].hasWidget">
                 <widget [scriptID]="script._id" [plugin]="plugin"></widget>
             </div>
-            <div class="page" *ngIf="script.pluginData[plugin].pluginSetup.hasPage">
+            <div class="page" *ngIf="script.pluginSetup[plugin].hasPage">
                 <a [routerLink]="'plugin/' + plugin">Goto Plugin Page</a>
             </div>
         </div>
