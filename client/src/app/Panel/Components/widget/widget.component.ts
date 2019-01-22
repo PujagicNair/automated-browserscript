@@ -63,7 +63,7 @@ export class WidgetComponent implements OnInit, OnDestroy {
       if (ago < 60000) {
         return (ago / 1000).toFixed(0) + "s ago";
       } else {
-        return (ago / 3600000).toFixed(0) + "m ago";
+        return (ago / 60000).toFixed(0) + "m ago";
       }
     }
   }

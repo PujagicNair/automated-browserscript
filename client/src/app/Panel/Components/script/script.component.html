@@ -1,23 +1,10 @@
-<div class="script" *ngIf="script">
-    <table>
-        <tr>
-            <th>Overview</th>
-        </tr>
-        <tr>
-            <td>status</td>
-            <td>{{ script.status }}</td>
-        </tr>
-        <tr>
-            <td>username</td>
-            <td>{{ script.username }}</td>
-        </tr>
-        <tr>
-            <td>id</td>
-            <td>{{ script._id }}</td>
-        </tr>
-    </table>
+<a routerLink="../..">Zurück zur Übersicht</a>
 
-    <div>Plugins</div>
+<div class="title">
+    Plugin Übersicht
+</div>
+
+<div class="script" *ngIf="script">
     <div *ngFor="let plugin of script.plugins">
         <div class="plugin" *ngIf="shouldShow(plugin)">
             <div class="header">{{ plugin }}</div>
@@ -30,5 +17,3 @@
         </div>
     </div>
 </div>
-
-<router-outlet></router-outlet>

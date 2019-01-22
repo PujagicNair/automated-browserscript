@@ -2,3 +2,33 @@
     margin: 20px 20%;
     padding: 5px 0;
 }
+
+.script {
+    border-radius: 8px;
+    border: 1px solid black;
+    padding: 15px;
+    margin: 15px 0;
+    display: flex;
+    background: linear-gradient(to bottom, #e9c9ac 0%,#e4ae78 22%,#dfae7d 30%,#dbac7d 100%);
+
+
+    .table-holder {
+        flex: 1;
+        th, td {
+            text-align: left;
+            white-space: nowrap;
+        }
+    }
+    .button-holder {
+        align-self: center;
+
+        a {
+            padding: 11px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+}

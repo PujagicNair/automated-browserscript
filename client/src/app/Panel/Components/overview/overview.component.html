@@ -1,6 +1,4 @@
 <div class="content">
-
-  <!-- Scripts -->
   <div class="block">
     <div class="title">
       Scripte Übersicht
@@ -9,18 +7,43 @@
       Keine Scripte verfügbar
     </div>
     <div class="script" *ngFor="let script of scripts">
-      <div class="name">{{ script.username }} ({{ script.serverCode }})</div>
-      <table>
-        <tr>
-          <td>Status</td>
-          <td>{{ script.status }}</td>
-        </tr>
-      </table>
-      <div>Plugins</div>
-      <ul class="effects">
-        <li *ngFor="let plugin of script.plugins">{{ plugin }}</li>
-      </ul>
-      <a [routerLink]="'script/' + script._id">Script Details</a>
+      <div class="table-holder">
+        <table>
+          <tr>
+            <th>Eingeloggt als</th>
+            <td>{{ script.username }}</td>
+          </tr>
+          <tr>
+            <th>Karte</th>
+            <td>{{ script.map }}</td>
+          </tr>
+          <tr>
+            <th>Punkte</th>
+            <td>560</td>
+          </tr>
+          <tr>
+            <th>Anzahl Dörfer</th>
+            <td>3</td>
+          </tr>
+          <tr>
+            <th>Status</th>
+            <td>{{ script.status }}</td>
+          </tr>
+          <tr>
+            <th>Server</th>
+            <td>{{ script.server }}</td>
+          </tr>
+          <tr>
+            <th>Anzahlt Plugins</th>
+            <td>{{ script.plugins.length }}</td>
+          </tr>
+        </table>
+      </div>
+      <div class="button-holder">
+        <a class="btn" [routerLink]="'script/' + script._id">Plugin Details</a>
+      </div>
+
+
     </div>
     <div class="center">
       <button class="btn spaced" routerLink="addscript">neues Script hinzufügen</button>
