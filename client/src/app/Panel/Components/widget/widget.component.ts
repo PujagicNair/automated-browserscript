@@ -10,6 +10,11 @@ import { HttpClient } from '@angular/common/http';
 export class WidgetComponent implements OnInit, OnDestroy {
 
   @Input() private scriptID: string;
+  private village: string;
+  @Input() private set villageID(val: string) {
+    this.village = val;
+    this.subscribe();
+  };
   @Input() private plugin: string;
   @ViewChild('content') private content: ElementRef<HTMLDivElement>;
 
@@ -26,9 +31,7 @@ export class WidgetComponent implements OnInit, OnDestroy {
     this.interval = setInterval(() => {
       this.time = this.timeOf();
     }, 1000);
-    this.updater = this.socket.widget(this.scriptID, this.plugin).subscribe(data => {
-      this.apply(data, Date.now());
-    });
+    this.subscribe();
 
     this.http.post('/api/widget', { scriptID: this.scriptID, plugin: this.plugin }).subscribe((res: any) => {
       if (res.success) {
@@ -40,8 +43,21 @@ export class WidgetComponent implements OnInit, OnDestroy {
     });
   }
 
+  private subscribe() {
+    if (this.updater) {
+      this.updater.unsubscribe();
+      this.updater = null;
+    }
+    if (this.scriptID && this.village && this.plugin) {
+      this.apply({}, Date.now());
+      this.updater = this.socket.widget(this.scriptID, this.village, this.plugin).subscribe(data => {
+        this.apply(data, Date.now());
+      });
+    }
+  }
+
   private apply(data, time) {
-    let rendered = this.render(this.html || '', data);
+    let rendered = this.render(this.html || '', data || {});
     this.content.nativeElement.innerHTML = rendered;
     this.lastTime = time;
   }

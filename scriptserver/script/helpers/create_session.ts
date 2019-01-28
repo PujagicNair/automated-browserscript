@@ -32,12 +32,12 @@ export default function createSession(hack: Hack): Promise<void> {
             return reject('failed to select map');
         }
 
-        // get village id
+        /*// get village id
         let villageId = await hack.browser.cookie('global_village_id');
         if (!villageId || !villageId.value) {
             return reject('village cookie not found');
         }
-        hack.villageId = villageId.value;
+        hack.villageId = villageId.value;*/
 
         // done
         return resolve();

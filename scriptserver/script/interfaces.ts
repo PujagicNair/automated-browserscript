@@ -28,6 +28,7 @@ export interface ISocket {
 
 export interface IPlugin {
     run?(hack: Hack, storage: IStorage, requires: IPluginOutputMap): Promise<IPluginOutput>;
+    pre?(hack: Hack, storage: IStorage, requires: IPluginOutputMap): Promise<void>;
     name: string;
     description: string;
     pluginSetup: {
@@ -92,4 +93,5 @@ export interface IPluginOutputMap {
 }
 
 export type DefaultOutput = (action: string, data: any) => void;
-export type PluginOutput = (plugin: string, data: any) => void;
+export type PluginOutput = (village: string, plugin: string, data: any) => void;
+export type widgetOutput = (village: string, data: { [plugin: string]: any }) => void;

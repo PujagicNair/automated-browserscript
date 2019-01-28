@@ -1,51 +1,99 @@
 import { IPlugin } from "../interfaces";
 
+interface MyWindow extends Window {
+    [key: string]: any;
+}
 
 const plugin: IPlugin = {
-    
     name: 'action-queue',
     description: 'give the script a list of things it has todo',
-    requires: ['build', 'building-queue'],
+    requires: ['buildings', 'build', 'building-queue'],
+    pre: async function(hack, storage, requires) {
+        await hack.gotoScreen("main");
+        let builds;
+        await requires['buildings'].run(hack, {
+            get: (_key, def) => def,
+            set: (_key, val) => builds = val 
+        });
+        await storage.set('buildings', builds.data);
+    },
     pluginSetup: {
         hasPage: true,
         hasWidget: true,
         hasTicks: true
     },
-    page: '<h4>Main Building</h4><table><tr><td>main</td><td><button data-screen="main" data-unit="main">add</button></td></tr><tr><td>barracks</td><td><button data-screen="main" data-unit="barracks">add</button></td></tr><tr><td>smith</td><td><button data-screen="main" data-unit="smith">add</button></td></tr><tr><td>market</td><td><button data-screen="main" data-unit="market">add</button></td></tr><tr><td>wood</td><td><button data-screen="main" data-unit="wood">add</button></td></tr><tr><td>stone</td><td><button data-screen="main" data-unit="stone">add</button></td></tr><tr><td>iron</td><td><button data-screen="main" data-unit="iron">add</button></td></tr><tr><td>farm</td><td><button data-screen="main" data-unit="farm">add</button></td></tr><tr><td>storage</td><td><button data-screen="main" data-unit="storage">add</button></td></tr><tr><td>hide</td><td><button data-screen="main" data-unit="hide">add</button></td></tr><tr><td>wall</td><td><button data-screen="main" data-unit="wall">add</button></td></tr></table><h4>Barracks</h4><table><tr><td>spear</td><td><input type="number" data-attach="spear" data-name="amount" data-prop="value"></td><td><button data-screen="barracks" data-unit="spear">add</button></td></tr><tr><td>sword</td><td><input type="number" data-attach="sword" data-name="amount" data-prop="value"></td><td><button data-screen="barracks" data-unit="sword">add</button></td></tr><tr><td>axe</td><td><input type="number" data-attach="axe" data-name="amount" data-prop="value"></td><td><button data-screen="barracks" data-unit="axe">add</button></td></tr></table>',
+    page: `
+        <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
+        <style>
+
+        </style>
+
+        <div class="content">
+            <h2>Action Queue</h2>
+
+            <span class="title">Warteschlange</span>
+            <span class="next">Nächste aktion: <span id="next">???</span></span>
+
+            <div class="title">Gebäude</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bild</th>
+                        <th>Name</th>
+                        <th>Stufe</th>
+                        <th>Verbessern</th>
+                    </tr>
+                </thead>
+                <tbody id="buildings"></tbody>
+            </table>
+        </div>
+    `,
     pageControl: {
         pauseTicks: false,
-        server: function(_hack, input, _output, storage) {
+        server: function(_hack, input, output, storage) {
             input(async data => {
-                if (data.type == 'add') {
-                    let queue = await storage.get('queue', []);
-                    delete data.type;
-                    queue.push(data);
-                    await storage.set('queue', queue);
+                if (data == 'init') {
+                    let buildings = await storage.get('buildings', []);
+                    output({ type: 'init', buildings });
+                } else if (data.type == 'add') {
+                    // add data
+                    console.log(data);
                 } else if (data.type == 'force') {
-                    await storage.set('force', true);
+                    // force check
                 }
             });
         },
-        client: function(window, input, output) {
-            window.document.querySelectorAll('button').forEach(button => {
-                button.addEventListener('click', function() {
-                    let unit = button.getAttribute('data-unit');
-                    let send = { type: 'add', screen: button.getAttribute('data-screen'), unit }
-                    window.document.querySelectorAll(`[data-attach=${unit}]`).forEach(attachement => {
-                        send[attachement.getAttribute('data-name')] = attachement[attachement.getAttribute('data-prop')];
+        client: function(window: MyWindow, input, output) {
+            input(data => {
+                let qs = sel => window.document.querySelector(sel);
+                let qsa = sel => window.document.querySelectorAll(sel);
+                if (data.type == 'init') {
+                    let blstr = "";
+                    for (let build of data.buildings) {
+                        blstr += `<tr><td><img src="${build.img}"></td><td>${build.name}</td><td>${build.level}</td>
+                        <td><button class="addbtn" data-unit="${build.key}">Add</button></td>
+                        </tr>`;
+                    }
+                    qs("#buildings").innerHTML = blstr;
+                    qsa("#buildings button").forEach(button => {
+                        button.addEventListener('click', () => {
+                            output({ type: 'add', unit: button.getAttribute('data-unit'), screen: 'main' });
+                        });
                     });
-                    output(send);
-                });
+                }
             });
+            return output('init');
         }
     },
     widget: '<table>@queueString</table>',
     run: function(hack, storage, requires) {
         return new Promise(async resolve => {
-            let nextTime = await storage.get('next', 0);
+            /*let nextTime = await storage.get('next', 0);
             let force = await storage.get('force', false);
             let queue = await storage.get('queue', []);
             let build = requires['build'].build;
+
             if (queue.length && (Date.now() > nextTime || force)) {
                 if (force) {
                     await storage.set('force', false);
@@ -101,8 +149,9 @@ const plugin: IPlugin = {
                 });
                 str += '</tr>';
                 return str;
-            }).join('');
-            return resolve({ queue, queueString });
+            }).join('');*/
+            
+            return resolve({ queue: [], queueString: '' });
         });
     }
 }

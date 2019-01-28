@@ -1,6 +1,6 @@
 import { Router } from "express";
 import * as path from 'path';
-import { ScriptModel, createModels, ServerModel } from "./hackmodel";
+import { ScriptModel, createModels, ServerModel, MTribalHackDocument } from "./hackmodel";
 import HackServer from "./hackserver";
 import storage from "./storage";
 import { IPlugin } from "./interfaces";
@@ -26,18 +26,12 @@ export class TribalHackApi {
             (async () => {
                 try {
                     await remote.connect();
-                    console.log('connected to:', server.name);
-                    
                     SERVERS[server.name] = remote;
                     let scripts = await ScriptModel.find({ server: server._id });
                     for (let script of scripts) {
-                        try {
-                            let runtime = await remote.runScript(script._id, script);
-                            runtime.on('widget', output => global.io.emit('script-widget', script._id, output.plugin, output.data));
-                            runtime.on('plugin', output => global.io.emit('script-plugin', script._id, output.plugin, output.data));
-                            runtime.on('storage', storage(script._id, (address, data) => runtime.emit(address, data)));
-                        } catch (error) {
-                            console.log(server.name + ' - failed to run script:', error);
+                        let runtime = remote.runtime(script._id);
+                        if (runtime) {
+                            TribalHackApi.pipeOutput(script._id, runtime);
                         }
                     }
                 } catch (error) {
@@ -45,26 +39,6 @@ export class TribalHackApi {
                 }
             })();
         }
-
-        /*let s1 = new ServerModel({
-            name: "local1",
-            url: "http://localhost:4102",
-            integrity: "0xDeadFuckTard"
-        });
-
-        let script = new ScriptModel({
-            serverUrl: "die-staemme.de",
-            serverCode: "de162",
-            map: "162",
-            username: "MrAboyobam",
-            password: "Elcano11",
-            plugins: ["recource-sync", "live-content"],
-            server: s1._id,
-            user: "5c40aba2378f151dbcac68fc"
-        });
-
-        await s1.save();
-        await script.save();*/
     }
 
     static handler() {
@@ -78,18 +52,7 @@ export class TribalHackApi {
             let scripts = await ScriptModel.find({ user: req.session.user }).populate('server');
             let jsonScripts = [];
             for (let script of scripts) {
-                let json = script.toJSON({ versionKey: false, depopulate: true });
-                let remote = SERVERS[script.server.name];
-                if (remote && remote.connected) {
-                    let response = await remote.query(script._id, 'status');
-                    if (response.success) {
-                        json.status = response.status.value;
-                    } else {
-                        json.status = 'unknown';
-                    }
-                } else {
-                    json.status = 'no connection to the script server';
-                }
+                let json = await TribalHackApi.getScript(script);
                 json.server = script.server.name;
                 jsonScripts.push(json);
             }
@@ -101,28 +64,28 @@ export class TribalHackApi {
             // create script
         });
 
-        router.get('/script/:id', async function(req: any, res) {
-            let scriptID = req.params.id;
-            let script = await ScriptModel.findById(scriptID).populate('server').select(['-password']);
-            if (!script || script.user != req.session.user) {
-                return res.json({ success: false, message: 'script is not assignet to user' });
-            }
-            let json = script.toJSON({ versionKey: false, depopulate: true });
-            let remote = SERVERS[script.server.name];
-            if (remote && remote.connected) {
-                let response = await remote.query(script._id, 'status');
-                if (response.success) {
-                    json.status = response.status.value;
+        router.post('/start', async function(req: any, res) {
+            let script = await ScriptModel.findOne({ _id: req.body.scriptID, user: req.session.user }).populate('server');
+            if (script) {   
+                let remote = SERVERS[script.server.name];
+                if (remote) try {
+                    let runtime = await remote.runScript(script._id, script);
+                    TribalHackApi.pipeOutput(script._id, runtime);
+                    return res.json({ success: true });
+                } catch (error) {
+                    return res.json({ success: false, message: script.server.name + ' - failed to run script: ' + error });
                 } else {
-                    json.status = 'unknown';
+                    return res.json({ success: false, message: 'script server not found' });
                 }
             } else {
-                json.status = 'no connection to the script server';
+                return res.json({ success: false, message: 'script not found' });
             }
-            delete json.server;
-            json.pluginSetup = {};
-            for (let plugin of json.plugins) {
-                json.pluginSetup[plugin] = PLUGINS[plugin].pluginSetup;
+        });
+
+        router.get('/script/:id', async function(req: any, res) {
+            let json = await TribalHackApi.getScript(req.params.id);
+            if (!json || json.user != req.session.user) {
+                return res.json({ success: false, message: 'script is not assignet to user' });
             }
             return res.json({ script: json, success: true });
         });
@@ -161,7 +124,7 @@ export class TribalHackApi {
                             let socket = global.io.sockets.connected[global.sockets[req.session.user]];
                             if (socket) {
                                 socket.on(`page-${script._id}-${plugin.name}`, (data) => {
-                                    let runtime = remote.getRuntime(script._id);
+                                    let runtime = remote.runtime(script._id);
                                     if (runtime) {
                                         runtime.emit(`page-${plugin.name}`, data);
                                     }
@@ -215,6 +178,82 @@ export class TribalHackApi {
             }
         });
 
+        router.post('/kill', async function(req: any, res) {
+            let script = await ScriptModel.findById(req.body.scriptID).populate('server');
+            if (script) {
+                if (script.user != req.session.user) {
+                    return res.json({ success: false, message: 'user doesnt have permissions' });
+                }
+                let remote = SERVERS[script.server.name];
+                if (remote && remote.connected) {
+                    try {
+                        let exit = await remote.query(script._id, 'kill');
+                        return res.json(exit);
+                    } catch (error) {
+                        return res.json({ success: false, message: error });
+                    }
+                } else {
+                    return res.json({ success: false, message: 'couldnt reach scriptserver' });
+                }
+            } else {
+                return res.json({ success: false, message: 'script not found' });
+            }
+        });
+
         return router;
+    }
+
+    private static getScript(id: string)
+    private static getScript(document: MTribalHackDocument)
+    private static getScript(input: string | MTribalHackDocument) {
+        return new Promise<any>(async resolve => {
+            let script: MTribalHackDocument;
+            if (typeof input == "string") {
+                script = await ScriptModel.findById(input).populate('server').select(['-password']);
+            } else {
+                script = input;
+            }
+            let json = script.toJSON({ versionKey: false, depopulate: true });
+
+            // self props
+            json.connected = false;
+            json.canStart = false;
+            json.canPause = false;
+            
+            let remote = SERVERS[script.server.name];
+            if (remote && remote.connected) {
+                let response = await remote.query(script._id, 'status');
+                if (response.success) {
+                    json.status = response.status.value;
+                    json.canTerminate = true;
+                    json.canPause = json.status == 'running';
+                } else {
+                    json.status = 'unknown';
+                    json.canStart = true;
+                }
+                json.connected = true;
+                let villages = await remote.query(script._id, 'villages');
+                if (villages.success) {
+                    json.villages = villages.villages;
+                }
+            } else {
+                json.status = 'no connection to the script server';
+            }
+            delete json.server;
+            json.pluginSetup = {};
+            for (let plugin of json.plugins) {
+                json.pluginSetup[plugin] = PLUGINS[plugin].pluginSetup;
+            }
+            return resolve(json);
+        });
+    }
+
+    private static pipeOutput(id: string, runtime) {
+        runtime.on('default', output => global.io.emit('script-default', id, output.action, output.data));
+        runtime.on('widget', output => global.io.emit('script-widget', id, output.village, output.data));
+        runtime.on('plugin', output => global.io.emit('script-plugin', id, output.plugin, output.data));
+        runtime.on('storage', storage(id, (address, data) => {
+            runtime.emit(address, data);
+        }));
     }
 }

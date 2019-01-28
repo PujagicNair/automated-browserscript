@@ -1,10 +1,11 @@
-import { IApi, ISocket, IHackConfig, PluginRequireData, IStatus, DefaultOutput, PluginOutput } from "./interfaces";
+import { IApi, ISocket, IHackConfig, PluginRequireData, IStatus, DefaultOutput, PluginOutput, widgetOutput } from "./interfaces";
 import { Browser } from "./browser";
 import sleep from "./helpers/sleep";
 import getStorage from "./helpers/get_storage";
 import providePluginsFor from "./helpers/plugin_require_provider";
 import loadPlugins from "./helpers/plugin_loader";
 import createSession from "./helpers/create_session";
+import multiVillages from "./helpers/multi_village";
 
 export class Hack {
 
@@ -22,26 +23,35 @@ export class Hack {
     }
 
     // props
-    villageId: string;
+    villages: { id: string, name: string }[] = [];
     browser: Browser;
     pluginData: PluginRequireData;
+    connected: boolean;
 
     // private
     private _status: IStatus = 'offline';
     private defaultOutput: DefaultOutput;
     private pluginOutput: PluginOutput;
-    private widgetOutput: PluginOutput;
+    private widgetOutput: widgetOutput;
     private runpage;
+    private tickListeners = [];
 
     private constructor(public config: IHackConfig, api: IApi, private socket: ISocket) {
         loadPlugins(this);
         
         // set output
         this.defaultOutput = (action: string, data: any) => socket.emit('default', { action, data });
-        this.widgetOutput = (plugin: string, data: any) => socket.emit('widget', { plugin, data });
-        this.pluginOutput = (plugin: string, data: any) => socket.emit('plugin', { plugin, data });
+        this.widgetOutput = (village: string, data) => socket.emit('widget', { village, data });
+        this.pluginOutput = (village: string, plugin: string, data: any) => socket.emit('plugin', { plugin, village, data });
+
+        this.connected = true;
 
         // handle api
+        api.on('connected', (res, value) => {
+            this.connected = value;
+            return res({ success: true });
+        });
+
         api.on('setup', async res => {
             try {
                 await this.setup();
@@ -56,10 +66,18 @@ export class Hack {
             return res({ success: false, message: 'not implemented' });
         });
 
+        api.on('villages', res => {
+            return res({ success: true, villages: this.villages });
+        });
+
         api.on('kill', async res => {
+            this.connected = false;
+            this.stop();
             await this.browser.kill();
+            res({ success: true });
+            await sleep(500);
             process.exit(0);
-            return res({ success: true });
+            return null;
         });
 
         api.on('start', async res => {
@@ -76,26 +94,19 @@ export class Hack {
             return res({ success: true, data: this.deserialize() });
         });
 
-        /*api.on('widget', (res, plugin) => {
-            let widget = this.pluginData[plugin];
-            if (widget.pluginSetup.hasWidget && widget.widget) {
-                return res({ success: true, widget: widget.widget });
-            } else {
-                return res({ success: false, message: 'plugin doesnt have a widget' });
-            }
-        });*/
-
-        api.on('openpage', (res, plugin) => {
+        api.on('openpage', (res, data) => {
+            let plugin = data.plugin;
             let page = this.pluginData[plugin];
+            let village = data.village;
             if (page.pluginSetup.hasPage && page.page) {
                 if (page.pageControl) {
                     let handlers: Function[] = [];
                     let input = callback => handlers.push(callback);
-                    let output = data => this.pluginOutput(plugin, data);
+                    let output = data => this.pluginOutput(village, plugin, data);
                     if (page.pageControl.pauseTicks) {
                         this.hold();
                     }
-                    let storage = getStorage(socket, plugin);
+                    let storage = getStorage(socket, plugin, village);
                     this.runpage = page.pageControl.server(this, input, output, storage);
                     socket.on(`page-${plugin}`, data => {
                         handlers.forEach(handler => handler(data));  
@@ -118,6 +129,12 @@ export class Hack {
             }
             return res({ success: true });
         });
+
+        api.on('reload', async res => {
+            await Hack.setup();
+            loadPlugins(this);
+            return res({ success: true });
+        });
     }
 
     // functions
@@ -127,8 +144,23 @@ export class Hack {
                 this.browser = new Browser();
                 await this.browser.start();
                 await createSession(this);
-                this.status = 'ready';
-                this.start();
+                await multiVillages(this);
+
+                // handle multiple villages
+                (async () => {
+                    await sleep(500);
+                    for (let village of this.villages) {
+                        this.browser.defaultPage = village.id;
+                        for (let plugin of this.config.plugins) {
+                            let meta = this.pluginData[plugin];
+                            if (meta.pre) {                    
+                                await meta.pre(this, getStorage(this.socket, plugin, village.id), providePluginsFor(this.pluginData, meta.requires));
+                            }
+                        }
+                    }
+                    this.status = 'ready';
+                    this.start();
+                })();
                 return resolve();
             } catch (error) {
                 return reject(error);
@@ -147,30 +179,45 @@ export class Hack {
         })();
     }
 
+    nextTick(callback) {
+        this.tickListeners.push(callback);
+    }
+
     tick() {
         return new Promise(async resolve => {
-            let data = {};
-            for (let plugin of this.config.plugins) {
-                let storage = getStorage(this.socket, plugin);
-                let script = this.pluginData[plugin];
-                if (script.pluginSetup.hasTicks) {
-                    let output = await script.run(this, storage, providePluginsFor(data, script.requires));
-                    if (script.pluginSetup.hasWidget) {
-                        this.widgetOutput(plugin, output);
+            let all = {};
+            for (let village of this.villages) {
+                let data = {};
+                this.browser.defaultPage = village.id;
+                for (let plugin of this.config.plugins) {
+                    let script = this.pluginData[plugin];
+                    if (script.pluginSetup.hasTicks && this.connected) {
+                        try {
+                            let storage = getStorage(this.socket, plugin, village.id);
+                            let run = script.run(this, storage, providePluginsFor(data, script.requires));
+                            let time = sleep(3000, {});
+                            let output = await Promise.race([ run, time ]);
+    
+                            if (JSON.stringify(output) == '{}') {
+                                console.log('plugin tick timed out:', plugin);
+                            }
+                            data[plugin] = output;
+                        } catch (error) {
+                            console.log(error);
+                        }
                     }
-                    if (script.pluginSetup.hasPage) {
-                        this.pluginOutput(plugin, output);
-                    }
-                    data[plugin] = output;
                 }
-            } 
-            return resolve(data);
+                all[village.id] = data;
+                this.widgetOutput(village.id, data);
+            }
+            return resolve(all);
         });
     }
 
     gotoScreen(screen: string) {
         if (this.screen != screen) {
-            return this.browser.open(`${this.config.serverCode}.${this.config.serverUrl}/game.php?village=${this.villageId}&screen=${screen}`);
+            let villageId: string = this.browser.defaultPage;
+            return this.browser.open(`${this.config.serverCode}.${this.config.serverUrl}/game.php?village=${villageId}&screen=${screen}`);
         }
     }
 

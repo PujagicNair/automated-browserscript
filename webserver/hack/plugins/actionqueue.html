@@ -1,0 +1,168 @@
+<link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
+    crossorigin="anonymous">
+
+<style>
+
+    #queue tr:first-of-type .up {
+        display: none;
+    }
+
+    #queue tr:last-of-type .down {
+        display: none;
+    }
+</style>
+
+<script>
+    let isedit = false;
+    window.onload = function() {
+    }
+</script>
+
+<div class="content">
+    <h2>Action Queue</h2>
+
+    <span class="title">Warteschlange</span>
+    <span class="next">Nächste aktion: <span id="next">???</span></span>
+    <table>
+        <thead>
+            <tr>
+                <th class="edit"><i class="fa fa-wrench"></i></th>
+                <th>Gebäude</th>
+                <th>Was</th>
+                <th>wv / wh</th>
+            </tr>
+        </thead>
+        <tbody id="queue">
+            <tr>
+                <td class="edit">
+                    <div class="up"><i class="fa fa-arrow-up"></i></div>
+                    <div class="down"><i class="fa fa-arrow-down"></i></div>
+                </td>
+                <td>Hauptgebäude</td>
+                <td>Kaserne</td>
+                <td>Stufe 16</td>
+                <td><i class="fa fa-trash"></i></td>
+            </tr>
+            <tr>
+                <td class="edit">
+                    <div class="up"><i class="fa fa-arrow-up"></i></div>
+                    <div class="down"><i class="fa fa-arrow-down"></i></div>
+                </td>
+                <td>Hauptgebäude</td>
+                <td>Kaserne</td>
+                <td>Stufe 16</td>
+                <td><i class="fa fa-trash"></i></td>
+            </tr>
+            <tr>
+                <td class="edit">
+                    <div class="up"><i class="fa fa-arrow-up"></i></div>
+                    <div class="down"><i class="fa fa-arrow-down"></i></div>
+                </td>
+                <td>Hauptgebäude</td>
+                <td>Kaserne</td>
+                <td>Stufe 16</td>
+                <td><i class="fa fa-trash"></i></td>
+            </tr>
+            <tr>
+                <td class="edit">
+                    <div class="up"><i class="fa fa-arrow-up"></i></div>
+                    <div class="down"><i class="fa fa-arrow-down"></i></div>
+                </td>
+                <td>Hauptgebäude</td>
+                <td>Kaserne</td>
+                <td>Stufe 16</td>
+                <td><i class="fa fa-trash"></i></td>
+            </tr>
+            <tr>
+                <td class="edit">
+                    <div class="up"><i class="fa fa-arrow-up"></i></div>
+                    <div class="down"><i class="fa fa-arrow-down"></i></div>
+                </td>
+                <td>Kaserne</td>
+                <td>Axtkämpfer</td>
+                <td>100</td>
+                <td><i class="fa fa-trash"></i></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="title">Gebäude</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Bild</th>
+                <th>Name</th>
+                <th>Stuffe</th>
+            </tr>
+        </thead>
+        <tbody id="buildings">
+        <tbody id="buildings">
+            <tr>
+                <td><img src="https://dsde.innogamescdn.com/asset/76fbc28978/graphic/buildings/mid/main2.png"></td>
+                <td>Hauptgebäude</td>
+                <td>Stufe 11</td>
+            </tr>
+            <tr>
+                <td><img src="https://dsde.innogamescdn.com/asset/76fbc28978/graphic/buildings/mid/barracks2.png"></td>
+                <td>Kaserne</td>
+                <td>Stufe 7</td>
+            </tr>
+            <tr>
+                <td><img src="https://dsde.innogamescdn.com/asset/76fbc28978/graphic/buildings/mid/stable1.png"></td>
+                <td>Stall</td>
+                <td>Stufe 3</td>
+            </tr>
+            <tr>
+                <td><img src="https://dsde.innogamescdn.com/asset/76fbc28978/graphic/buildings/mid/smith2.png"></td>
+                <td>Schmiede</td>
+                <td>Stufe 5</td>
+            </tr>
+            <tr>
+                <td><img src="https://dsde.innogamescdn.com/asset/76fbc28978/graphic/buildings/mid/place1.png"></td>
+                <td>Versammlungsplatz</td>
+                <td>Stufe 1</td>
+            </tr>
+            <tr>
+                <td><img src="https://dsde.innogamescdn.com/asset/76fbc28978/graphic/buildings/mid/market2.png"></td>
+                <td>Marktplatz</td>
+                <td>Stufe 5</td>
+            </tr>
+            <tr>
+                <td><img src="https://dsde.innogamescdn.com/asset/76fbc28978/graphic/buildings/mid/wood3.png"></td>
+                <td>Holzfällerlager</td>
+                <td>Stufe 23</td>
+            </tr>
+            <tr>
+                <td><img src="https://dsde.innogamescdn.com/asset/76fbc28978/graphic/buildings/mid/stone3.png"></td>
+                <td>Lehmgrube</td>
+                <td>Stufe 22</td>
+            </tr>
+            <tr>
+                <td><img src="https://dsde.innogamescdn.com/asset/76fbc28978/graphic/buildings/mid/iron2.png"></td>
+                <td>Eisenmine</td>
+                <td>Stufe 19</td>
+            </tr>
+            <tr>
+                <td><img src="https://dsde.innogamescdn.com/asset/76fbc28978/graphic/buildings/mid/farm2.png"></td>
+                <td>Bauernhof</td>
+                <td>Stufe 13</td>
+            </tr>
+            <tr>
+                <td><img src="https://dsde.innogamescdn.com/asset/76fbc28978/graphic/buildings/mid/storage2.png"></td>
+                <td>Speicher</td>
+                <td>Stufe 14</td>
+            </tr>
+            <tr>
+                <td><img src="https://dsde.innogamescdn.com/asset/76fbc28978/graphic/buildings/mid/hide1.png"></td>
+                <td>Versteck</td>
+                <td>Stufe 3</td>
+            </tr>
+            <tr>
+                <td><img src="https://dsde.innogamescdn.com/asset/76fbc28978/graphic/buildings/mid/wall2.png"></td>
+                <td>Wall</td>
+                <td>Stufe 7</td>
+            </tr>
+        </tbody>
+        </tbody>
+    </table>
+</div>

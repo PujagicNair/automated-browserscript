@@ -5,11 +5,14 @@
 </div>
 
 <div class="script" *ngIf="script">
+    <div class="villages">
+        <button *ngFor="let village of script.villages" (click)="villageID = village.id" [class.active]="villageID == village.id">{{ village.name }}</button>
+    </div>
     <div *ngFor="let plugin of script.plugins">
         <div class="plugin" *ngIf="shouldShow(plugin)">
             <div class="header">{{ plugin }}</div>
             <div class="widget" *ngIf="script.pluginSetup[plugin].hasWidget">
-                <widget [scriptID]="script._id" [plugin]="plugin"></widget>
+                <widget [scriptID]="script._id" [plugin]="plugin" [villageID]="villageID"></widget>
             </div>
             <div class="page" *ngIf="script.pluginSetup[plugin].hasPage">
                 <a [routerLink]="'plugin/' + plugin">Goto Plugin Page</a>

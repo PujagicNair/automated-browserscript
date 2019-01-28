@@ -29,6 +29,7 @@ export interface ISocket {
 
 export interface IPlugin {
     run?(hack: Hack, storage: IStorage, requires: IPluginOutputMap): Promise<IPluginOutput>;
+    pre?(hack: Hack, storage: IStorage, requires: IPluginOutputMap): Promise<void>;
     name: string;
     description: string;
     pluginSetup: {
@@ -96,7 +97,7 @@ export type DefaultOutput = (action: string, data: any) => void;
 export type PluginOutput = (plugin: string, data: any) => void;
 
 export interface Hack {
-    villageId: string;
+    //villageId: string;
     browser: Browser;
     pluginData: PluginRequireData;
     status: IStatus;
@@ -113,7 +114,9 @@ export interface Hack {
 
 interface Browser {
     page: puppeteer.Page;
+    pages: {[key: string]: puppeteer.Page};
     url: string;
+    defaultPage: string;
     start(): Promise<void>;
     open(url: string): Promise<void>;
     type(selector: string, data: string): Promise<void>;

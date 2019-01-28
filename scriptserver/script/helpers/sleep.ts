@@ -1,7 +1,7 @@
-export default function sleep(ms: number) {
+export default function sleep<T = any>(ms: number, value?: T): Promise<T> {
     return new Promise(resolve => {
         return setTimeout(() => {
-            return resolve();
+            return resolve(value);
         }, ms);
     });
 }

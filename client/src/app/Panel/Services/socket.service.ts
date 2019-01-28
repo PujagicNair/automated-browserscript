@@ -38,11 +38,11 @@ export class SocketService {
     return subject;
   }
 
-  widget(scriptID: string, name: string): Subject<WidgetSub> {
+  widget(scriptID: string, villageID: string, name: string): Subject<WidgetSub> {
     let subject = new Subject<WidgetSub>();
     this.on('script-widget').subscribe(data => {
-      if (data[0] == scriptID && data[1] == name) {
-        subject.next(data[2]);
+      if (data[0] == scriptID && data[1] == villageID) {
+        subject.next(data[2][name]);
       }
     });
     return subject;
@@ -51,18 +51,18 @@ export class SocketService {
   plugin(scriptID: string, name: string): Subject<WidgetSub> {
     let subject = new Subject<WidgetSub>();
     this.on('script-plugin').subscribe(data => {
-      if (data[0] == scriptID && data[1] == name) {
+      console.log('plugin', data);
+      
+      /*if (data[0] == scriptID && data[1] == name) {
         subject.next(data[2]);
-      }
+      }*/
     });
     return subject;
   }
 
   pluginOutput(scriptID: string, name: string) {
     return data => {
-      this.socket.emit(`page-${scriptID}-${name}`, data);
-      console.log('send data to', `page-${scriptID}-${name}`, data);
-      
+      //this.socket.emit(`page-${scriptID}-${name}`, data);
     }
   }
 

@@ -7,43 +7,46 @@
       Keine Scripte verfügbar
     </div>
     <div class="script" *ngFor="let script of scripts">
-      <div class="table-holder">
-        <table>
-          <tr>
-            <th>Eingeloggt als</th>
-            <td>{{ script.username }}</td>
-          </tr>
-          <tr>
-            <th>Karte</th>
-            <td>{{ script.map }}</td>
-          </tr>
-          <tr>
-            <th>Punkte</th>
-            <td>560</td>
-          </tr>
-          <tr>
-            <th>Anzahl Dörfer</th>
-            <td>3</td>
-          </tr>
-          <tr>
-            <th>Status</th>
-            <td>{{ script.status }}</td>
-          </tr>
-          <tr>
-            <th>Server</th>
-            <td>{{ script.server }}</td>
-          </tr>
-          <tr>
-            <th>Anzahlt Plugins</th>
-            <td>{{ script.plugins.length }}</td>
-          </tr>
-        </table>
+      <div class="flex-holder">
+        <div class="table-holder">
+          <table>
+            <tr>
+              <th>Eingeloggt als</th>
+              <td>{{ script.username }}</td>
+            </tr>
+            <tr>
+              <th>Karte</th>
+              <td>{{ script.map }}</td>
+            </tr>
+            <tr>
+              <th>Punkte</th>
+              <td>560 (hard)</td>
+            </tr>
+            <tr>
+              <th>Anzahl Dörfer</th>
+              <td>{{ script.villages ? script.villages.length : '?' }}</td>
+            </tr>
+            <tr>
+              <th>Status</th>
+              <td>{{ script.status }}</td>
+            </tr>
+            <tr>
+              <th>Server</th>
+              <td>{{ script.server }}</td>
+            </tr>
+            <tr>
+              <th>Anzahlt Plugins</th>
+              <td>{{ script.plugins.length }}</td>
+            </tr>
+          </table>
+        </div>
+        <div class="button-holder" *ngIf="script.canPause">
+          <a class="btn" [routerLink]="'script/' + script._id">Plugin Details</a>
+        </div>
       </div>
-      <div class="button-holder">
-        <a class="btn" [routerLink]="'script/' + script._id">Plugin Details</a>
-      </div>
-
-
+      <button (click)="trigger(script._id, 'kill')" [disabled]="!script.canTerminate || isOperating">Terminieren</button>
+      <!--<button (click)="trigger(script._id, 'pause')" [disabled]="!script.canPause">Pausieren</button>-->
+      <button (click)="trigger(script._id, 'start')" [disabled]="!script.canStart || isOperating">Starten</button>
     </div>
     <div class="center">
       <button class="btn spaced" routerLink="addscript">neues Script hinzufügen</button>

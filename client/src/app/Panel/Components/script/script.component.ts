@@ -14,16 +14,17 @@ export class ScriptComponent implements OnInit, OnDestroy {
 
   script;
   defaultUpdater;
+  villages = [];
+  villageID;
 
   ngOnInit() {
     let scriptID = this.route.snapshot.params.id;
     
     this.http.get('/api/script/' + scriptID).subscribe((res: any) => {
-      console.log(res);
-      
       if (res.success) {
         let script = res.script;
         this.script = script;
+        this.villageID = script.villages[0].id;
       }
     });
 

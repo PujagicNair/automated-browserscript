@@ -3,7 +3,7 @@ import * as io from 'socket.io-client';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
-const RUNTIMES = {};
+let RUNTIMES = {};
 export default class HackServer {
 
     private socket;
@@ -18,33 +18,52 @@ export default class HackServer {
     connect() {
         return new Promise(async (resolve, reject) => {
             this.socket = io.connect(this.address, <any>{ extraHeaders: { integrity: this.integrity } });
-            this.socket.on('verified', async value => {
-                if (value) {
-                    this.socket.on('transfer', (name: string, action: string, data: any) => {
-                        this.listeners.filter(listener => listener.name == name && listener.action == action).forEach(listener => {
-                            listener.callback(data);
+            this.socket.on('connect', () => {
+                this.socket.on('verified', async value => {
+                    if (value) {
+                        this.socket.on('transfer', (name: string, action: string, data: any) => {
+                            this.listeners.filter(listener => listener.name == name && listener.action == action).forEach(listener => {
+                                listener.callback(data);
+                            });
                         });
-                    });
-                    this.connected = true;
-                    this.socket.on('disconnect', () => this.connected = false);
-
-                    // sync plugins with server
-                    let plugFiles = fs.readdirSync(path.join(__dirname, 'plugins'));
-                    let form = request.post(this.address + '/plugins', {
-                        headers: { integrity: this.integrity, "content-type": "multipart/form-data" }
-                    }, (_err, _res, body) => {
-                        if (JSON.parse(body).success) {
-                            return resolve();
-                        } else {
-                            return reject('failed to update plugins');
+                        this.connected = true;
+                        this.socket.on('disconnect', () => {
+                            this.connected = false;
+                            RUNTIMES = {};
+                            this.socket.off('transfer');
+                            this.socket.off('verified');
+                        });
+                        let runtimes: string[] = (await this.get('/runtimes')).runtimes;
+                        for (let name of runtimes) {
+                            let runtime = {
+                                on: (action: string, callback: Function) => {
+                                    this.listeners.push({ name, action, callback });
+                                },
+                                emit: (action: string, data?: any) => {
+                                    this.socket.emit('transfer-' + name, action, data);
+                                }
+                            }
+                            RUNTIMES[name] = runtime;
                         }
-                    }).form();
-                    for (let plug of plugFiles) {
-                        form.append('file', fs.createReadStream(path.join(__dirname, 'plugins', plug)));
+                        
+                        // sync plugins with server
+                        let plugFiles = fs.readdirSync(path.join(__dirname, 'plugins'));
+                        let form = request.post(this.address + '/plugins', {
+                            headers: { integrity: this.integrity, "content-type": "multipart/form-data" }
+                        }, (_err, _res, body) => {
+                            if (JSON.parse(body).success) {
+                                return resolve();
+                            } else {
+                                return reject('failed to update plugins');
+                            }
+                        }).form();
+                        for (let plug of plugFiles) {
+                            form.append('file', fs.createReadStream(path.join(__dirname, 'plugins', plug)));
+                        }
+                    } else {
+                        return reject('invalide integrity');
                     }
-                } else {
-                    return reject('invalide integrity');
-                }
+                });
             });
         });
     }
@@ -87,8 +106,6 @@ export default class HackServer {
                         this.listeners.push({ name, action, callback });
                     },
                     emit: (action: string, data?: any) => {
-                        //console.log('runtime send', 'transfer-' + name, action, data);
-                        
                         this.socket.emit('transfer-' + name, action, data);
                     }
                 }
@@ -101,11 +118,11 @@ export default class HackServer {
         });
     }
 
-    getRuntime(name: string): IRuntime {
+    runtime(name: string): IRuntime {
         return RUNTIMES[name];
     }
 
-    query(name: string, type: 'status' | 'lasttick' | 'openpage' | 'closepage', adds?: { [key: string]: string }) {
+    query(name: string, type: QueryArg, adds?: { [key: string]: string }) {
         let params = '';
         if (adds) {
             for (let key in adds) {
@@ -115,6 +132,8 @@ export default class HackServer {
         return this.get('/' + type + "?name=" + name + params);
     }
 }
+
+type QueryArg = 'status' | 'lasttick' | 'openpage' | 'closepage' | 'kill' | 'villages';
 
 interface IRuntime {
     on: (action: 'default' | 'widget' | 'plugin' | 'storage', callback: Function) => void;

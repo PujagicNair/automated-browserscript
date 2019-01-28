@@ -23,6 +23,7 @@ export function createModels() {
             ref: 'scripts'
         },
         data: Schema.Types.Mixed,
+        villageID: String,
         plugin: String
     });
 

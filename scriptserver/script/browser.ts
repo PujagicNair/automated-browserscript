@@ -5,16 +5,27 @@ export class Browser {
 
     constructor() {}
 
-    page: puppeteer.Page;
+    //page: puppeteer.Page;
     private browser: puppeteer.Browser;
+
+    pages: { [key: string]: puppeteer.Page } = {};
+    defaultPage: string = "default";
 
     start() {
         return new Promise(async resolve => {
             this.browser = await puppeteer.launch({ headless: false, defaultViewport: { width: 1003, height: 730 } });
             //this.browser = await puppeteer.launch({ defaultViewport: { width: 1003, height: 730 }, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-            this.page = (await this.browser.pages())[0];
+            this.pages["default"] = (await this.browser.pages())[0];
             await this.page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36');
             return resolve();
+        });
+    }
+
+    newPage(key: string): Promise<puppeteer.Page> {
+        return new Promise(async resolve => {
+            let page = await this.browser.newPage();
+            this.pages[key] = page;
+            return resolve(page);
         });
     }
 
@@ -142,5 +153,9 @@ export class Browser {
 
     get url(): string {
         return this.page.url();
+    }
+
+    get page() {
+        return this.pages[this.defaultPage];
     }
 }

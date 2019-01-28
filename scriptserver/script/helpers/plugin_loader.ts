@@ -14,7 +14,11 @@ export default function loadPlugins(hack?: Hack): any {
             let plugins: PluginRequireData = {};
     
             for (let file of pluginFiles) {
-                let script: IPlugin = await import('../plugins/' + file.slice(0, -3));
+                let filepath = path.resolve(__dirname, '..', 'plugins', file);
+                if (require.cache[filepath]) {
+                    delete require.cache[filepath];
+                }
+                let script: IPlugin = await import(filepath);
                 plugins[script.name] = script;
             }
             

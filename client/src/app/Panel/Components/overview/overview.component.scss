@@ -8,9 +8,12 @@
     border: 1px solid black;
     padding: 15px;
     margin: 15px 0;
-    display: flex;
+
     background: linear-gradient(to bottom, #e9c9ac 0%,#e4ae78 22%,#dfae7d 30%,#dbac7d 100%);
 
+    .flex-holder {
+        display: flex;
+    }
 
     .table-holder {
         flex: 1;

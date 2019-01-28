@@ -1,7 +1,7 @@
 import { IStorage, ISocket } from "../interfaces";
 
 let storageIndex = 0;
-export default function getStorage(socket: ISocket, plugin: string): IStorage {
+export default function getStorage(socket: ISocket, plugin: string, villageID: string): IStorage {
     return {
         get: (key: string, defaultValue?) => {
             return new Promise(async resolve => {
@@ -10,7 +10,7 @@ export default function getStorage(socket: ISocket, plugin: string): IStorage {
                     socket.off(responseAddr);
                     return resolve(data);
                 });
-                socket.emit('storage', { key, defaultValue, responseAddr, plugin, method: 'get' });
+                socket.emit('storage', { key, defaultValue, responseAddr, plugin, villageID, method: 'get' });
             });
         },
         set: (key: string, data: any) => {
@@ -20,7 +20,7 @@ export default function getStorage(socket: ISocket, plugin: string): IStorage {
                     socket.off(responseAddr);
                     return resolve();
                 });
-                socket.emit('storage', { key, value: data, responseAddr, plugin, method: 'set' });
+                socket.emit('storage', { key, value: data, responseAddr, plugin, villageID, method: 'set' });
             });
         }
     }

@@ -14,6 +14,7 @@ const plugin: IPlugin = {
     run: function(hack, _, requires) {
         return new Promise(async resolve => {
             return resolve({
+                success: true,
                 build: function(building: string, force?: boolean) {
                     return new Promise(async resolve => {
                         let queueRes = requires['building-queue'];
