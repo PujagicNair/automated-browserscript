@@ -23,11 +23,16 @@ export class OverviewComponent implements OnInit, OnDestroy {
     });
 
     this.updater = this.socket.default().subscribe(data => {
-      let script = this.scripts.find(script => {
-        return script._id == data.scriptID;
-      });
-      if (script && data.action == 'status') {
-        script.status = data.data;
+      if (data.key == "status" && data.scriptID) {
+        let script = this.scripts.find(script => script._id == data.scriptID);
+        if (script) {
+          script.status = data.data;
+        }
+      } else if (data.key == "connected" && data.server) {
+        let scripts = this.scripts.filter(script => script.server == data.server);
+        scripts.forEach(script => {
+          script.connected = data.value;
+        });
       }
     });
   }
@@ -36,9 +41,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
     this.isOperating = true;
     this.http.post('/api/' + action, { scriptID }).subscribe((res: any) => {
       this.isOperating = false;
-      if (res.success) {
-        console.log('[success]', action);
-      } else {
+      if (!res.success) {
         alert(res.message);
       }
     });

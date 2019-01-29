@@ -42,7 +42,7 @@ export interface IPlugin {
     pageControl?: {
         pauseTicks: boolean;
         server: (
-            hack: Hack,
+            hack: Browser,
             input: (
                 callback: (data) => void
             ) => void,

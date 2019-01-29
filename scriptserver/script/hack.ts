@@ -99,8 +99,6 @@ export class Hack {
         api.on('openpage', (res, data) => {
             let plugin = data.plugin;
             let page = this.pluginData[plugin];
-            console.log('openpage', data);
-            
             let village = data.village;
 
             if (page.pluginSetup.hasPage && page.page) {
@@ -112,11 +110,9 @@ export class Hack {
                         this.hold(village, true);
                     }
                     let storage = getStorage(socket, plugin, village);
-                    this.runpage = page.pageControl.server(this, input, output, storage, this.browser.page[village]);
-                    console.log('listen on', `page-${plugin}-${village}`);
-                    
+                    this.runpage = page.pageControl.server(<any>(this.browser.scoped(village)), input, output, storage, this.browser.page[village]);
                     socket.on(`page-${plugin}-${village}`, data => {
-                        handlers.forEach(handler => handler(data));  
+                        handlers.forEach(handler => handler(data));
                     });
                 }
                 return res({ success: true, page: page.page, runtime: page.pageControl ? page.pageControl.client.toString() : '' });
@@ -195,7 +191,6 @@ export class Hack {
             let all = {};
             for (let village of this.villages) {
                 if (this.holdPages[village.id]) {
-                    console.log('skipping', village);
                     all[village.id] = {};
                     continue;
                 }

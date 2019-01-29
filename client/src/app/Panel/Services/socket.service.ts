@@ -32,8 +32,8 @@ export class SocketService {
   
   default(): Subject<DefaultSub> {
     let subject = new Subject<DefaultSub>();
-    this.on('script-default').subscribe(data => {
-      subject.next({ scriptID: data[0], action: data[1], data: data[2] });
+    this.on('default').subscribe(data => {
+      subject.next(data[0]);
     });
     return subject;
   }
@@ -50,10 +50,7 @@ export class SocketService {
 
   plugin(scriptID: string, name: string, village: string): Subject<WidgetSub> {
     let subject = new Subject<WidgetSub>();
-    console.log('sub plugin');
     this.on('script-plugin').subscribe(data => {
-      console.log('plugin', data);
-      
       if (data[0] == scriptID && data[1] == village && data[2] == name) {
         subject.next(data[3]);
       }
@@ -69,7 +66,14 @@ export class SocketService {
 
 }
 
-type DefaultSub = { scriptID: string, action: string, data: any };
+interface DefaultSub {
+  scriptID: string;
+  action: string;
+  data: any;
+  key: "status" | "connected";
+  server: string;
+  value: any;
+};
 type WidgetSub = any;
 
 interface IListeners {

@@ -15,20 +15,20 @@ const plugin: IPlugin = {
     page: 'loading...',
     pageControl: {
         pauseTicks: true,
-        server: function(hack, input, output) {
+        server: function(browser, input, output) {
             let interval;
             input(async data => {
                 if (data.type == "ready") {
                     clearInterval(interval);
                     interval = setInterval(async () => {
-                        let res = await hack.browser.selectMultiple('#wood, #stone, #iron', ['id', 'innerText']);
+                        let res = await browser.selectMultiple('#wood, #stone, #iron', ['id', 'innerText']);
                         res.forEach(entry => {
                             return output({ type: "selector", selector: "#" + entry.id, prop: 'innerText', value: entry.innerText });
                         });
                     }, 3000);
                     await sendPage();
                 } else if (data.type == "click") {
-                    hack.browser.page.evaluate((sel) => {
+                    browser.page.evaluate((sel) => {
                         document.querySelector(sel).click();
                     }, data.selector);
                     await new Promise(async resolve => {
@@ -37,23 +37,23 @@ const plugin: IPlugin = {
                             resolved = true;
                             return resolve();
                         }
-                        hack.browser.page.once('load', loadListen);
+                        browser.page.once('load', loadListen);
                         await sleep(500);
                         if (!resolved) {
                             resolved = true;
-                            hack.browser.page.removeListener('load', loadListen);
+                            browser.page.removeListener('load', loadListen);
                             return resolve();
                         }
                     });
                     await sendPage();
                 } else if (data.type == "input") {
-                    await hack.browser.page.evaluate(({ selector, value }) => {
+                    await browser.page.evaluate(({ selector, value }) => {
                         document.querySelector(selector).value = value;
                     }, data); 
                 }
             });
             async function sendPage() {
-                let html: string = await hack.browser.page.evaluate(() => document.all[0].innerHTML);
+                let html: string = await browser.page.evaluate(() => document.all[0].innerHTML);
                 html = html.replace(/<script[\s\S]+?<\/script>/g, '');
                 output({ type: "html", content: html });
             }

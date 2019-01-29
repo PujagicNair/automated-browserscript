@@ -15,6 +15,7 @@ const output = {
 }
 
 let listeners = [];
+
 let socket: ISocket = {
     on: function(action: string, callback) {
         listeners.push({ action, callback });
@@ -23,7 +24,7 @@ let socket: ISocket = {
         return output.socket(action, data);
     },
     off: function(action: string, callback?) {
-        listeners = listeners.filter(listener => (listener.action == action && listener.callback == (callback || listener.callback)));
+        listeners = listeners.filter(listener => !(listener.action == action && listener.callback == (callback || listener.callback)));
     }
 }
 

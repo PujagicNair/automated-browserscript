@@ -23,6 +23,25 @@ export class TribalHackApi {
         let servers = await ServerModel.find();
         for (let server of servers) {
             let remote = new HackServer(server.url, server.integrity);
+            remote.change(async (key, value) => {
+                global.io.emit('default', { key, value, server: server.name });
+                if (key == 'connected' && value === true) {
+                    let scripts = await ScriptModel.find({ server: server._id });
+                    for (let script of scripts) {
+                        let status = await remote.query(script._id, 'status');
+                        if (status.success) {
+                            global.io.emit('default', { key: 'status', scriptID: script._id, data: status.status.value });
+                        } else {
+                            global.io.emit('default', { key: 'status', scriptID: script._id, data: 'offline' });
+                        }
+                    }
+                } else if (key == 'connected' && value === false) {
+                    let scripts = await ScriptModel.find({ server: server._id });
+                    for (let script of scripts) {
+                        global.io.emit('default', { key: 'status', scriptID: script._id, data: 'unknown' });
+                    }
+                }
+            });
             (async () => {
                 try {
                     await remote.connect();
@@ -66,6 +85,7 @@ export class TribalHackApi {
 
         router.post('/start', async function(req: any, res) {
             let script = await ScriptModel.findOne({ _id: req.body.scriptID, user: req.session.user }).populate('server');
+            global.io.emit('default', { key: 'status', scriptID: script._id, data: 'preparing to boot' });
             if (script) {   
                 let remote = SERVERS[script.server.name];
                 if (remote) try {
@@ -102,6 +122,8 @@ export class TribalHackApi {
                         if (lasttick.success) {
                             let data = lasttick.data.value[village][plugin.name];
                             return res.json({ success: true, content: plugin.widget, data, time: lasttick.data.time });
+                        } else {
+                            return res.json(lasttick);
                         }
                     }
                 }
@@ -219,19 +241,14 @@ export class TribalHackApi {
 
             // self props
             json.connected = false;
-            json.canStart = false;
-            json.canPause = false;
             
             let remote = SERVERS[script.server.name];
             if (remote && remote.connected) {
                 let response = await remote.query(script._id, 'status');
                 if (response.success) {
                     json.status = response.status.value;
-                    json.canTerminate = true;
-                    json.canPause = json.status == 'running';
                 } else {
-                    json.status = 'unknown';
-                    json.canStart = true;
+                    json.status = 'offline';
                 }
                 json.connected = true;
                 let villages = await remote.query(script._id, 'villages');
@@ -251,7 +268,7 @@ export class TribalHackApi {
     }
 
     private static pipeOutput(id: string, runtime) {
-        runtime.on('default', output => global.io.emit('script-default', id, output.action, output.data));
+        runtime.on('default', output => global.io.emit('default', { scriptID: id, key: output.action, data: output.data }));
         runtime.on('widget', output => global.io.emit('script-widget', id, output.village, output.data));
         runtime.on('plugin', output => {
             global.io.emit('script-plugin', id, output.village, output.plugin, output.data);

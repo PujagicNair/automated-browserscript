@@ -31,7 +31,9 @@ io.on('connection', (socket) => {
         Object.keys(SCRIPTS).forEach(name => {
             let script = SCRIPTS[name];
             script.send('connected', true);
-            socketConn.on('transfer-' + name, (action, data) => script.socket.emit(action, data));
+            socketConn.on('transfer-' + name, (action, data) => {
+                script.socket.emit(action, data);
+            });
         });
         socket.on('disconnect', () => {
             Object.keys(SCRIPTS).forEach(name => {
@@ -89,8 +91,6 @@ app.post('/run', async function(req, res) {
     });
     script.socket.on('plugin', data => {
         io.emit('transfer', name, 'plugin', data);
-        console.log('plug in', data);
-        
     });
     script.socket.on('widget', data => {
         io.emit('transfer', name, 'widget', data);

@@ -9,7 +9,8 @@ export default class HackServer {
     private socket;
     scripts: string[];
     connected: boolean = false;
-    private listeners = [];
+    private listeners = []; // socket listeners
+    private handlers = []; // status listeners
 
     constructor(private address: string, private integrity: string) {
         this.scripts = [];
@@ -27,11 +28,13 @@ export default class HackServer {
                             });
                         });
                         this.connected = true;
+                        this.trigger('connected', true);
                         this.socket.on('disconnect', () => {
                             this.connected = false;
                             RUNTIMES = {};
                             this.socket.off('transfer');
                             this.socket.off('verified');
+                            this.trigger('connected', false);
                         });
                         let runtimes: string[] = (await this.get('/runtimes')).runtimes;
                         for (let name of runtimes) {
@@ -65,6 +68,16 @@ export default class HackServer {
                     }
                 });
             });
+        });
+    }
+
+    change(callback) {
+        this.handlers.push(callback);
+    }
+
+    private trigger(key: string, value: any) {
+        this.handlers.forEach(handler => {
+            handler(key, value);
         });
     }
 

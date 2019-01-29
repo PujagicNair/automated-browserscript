@@ -24,6 +24,7 @@ export class Browser {
     newPage(key: string): Promise<puppeteer.Page> {
         return new Promise(async resolve => {
             let page = await this.browser.newPage();
+            await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36');
             this.pages[key] = page;
             return resolve(page);
         });
@@ -35,6 +36,14 @@ export class Browser {
 
     type(selector: string, data: string) {
         return this.page.type(selector, data);
+    }
+
+    scoped(page: string): Browser {
+        let run = new Browser();
+        run.browser = this.browser;
+        run.defaultPage = page;
+        run.pages = { [page]: this.pages[page] };
+        return run;
     }
 
     select<T = any>(selector: string, output: string): Promise<T>;

@@ -1,11 +1,10 @@
 import { IStorage, ISocket } from "../interfaces";
 
-let storageIndex = 0;
 export default function getStorage(socket: ISocket, plugin: string, villageID: string): IStorage {
     return {
         get: (key: string, defaultValue?) => {
             return new Promise(async resolve => {
-                let responseAddr = `storage-${storageIndex++}-${Date.now()}`;
+                let responseAddr = `storage-${Math.random().toString().replace('0.', '')}-${Date.now()}`;
                 socket.on(responseAddr, data => {
                     socket.off(responseAddr);
                     return resolve(data);
@@ -15,7 +14,7 @@ export default function getStorage(socket: ISocket, plugin: string, villageID: s
         },
         set: (key: string, data: any) => {
             return new Promise(async resolve => {
-                let responseAddr = `storage-${storageIndex++}-${Date.now()}`;
+                let responseAddr = `storage-${Math.random().toString().replace('0.', '')}-${Date.now()}`;
                 socket.on(responseAddr, () => {
                     socket.off(responseAddr);
                     return resolve();

@@ -1,5 +1,6 @@
 import { Hack } from "./hack";
 import { Page } from "puppeteer";
+import { Browser } from "./browser";
 
 export interface IApi {
     on(url: string, callback: IApiListenerCallback): void;

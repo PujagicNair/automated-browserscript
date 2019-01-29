@@ -40,13 +40,13 @@
             </tr>
           </table>
         </div>
-        <div class="button-holder" *ngIf="script.canPause">
+        <div class="button-holder" *ngIf="script.status != 'offline' &&  script.connected">
           <a class="btn" [routerLink]="'script/' + script._id">Plugin Details</a>
         </div>
       </div>
-      <button (click)="trigger(script._id, 'kill')" [disabled]="!script.canTerminate || isOperating">Terminieren</button>
+      <button (click)="trigger(script._id, 'kill')" [disabled]="script.status == 'offline' || isOperating || !script.connected">Terminieren</button>
       <!--<button (click)="trigger(script._id, 'pause')" [disabled]="!script.canPause">Pausieren</button>-->
-      <button (click)="trigger(script._id, 'start')" [disabled]="!script.canStart || isOperating">Starten</button>
+      <button (click)="trigger(script._id, 'start')" [disabled]="script.status != 'offline' || isOperating || !script.connected">Starten</button>
     </div>
     <div class="center">
       <button class="btn spaced" routerLink="addscript">neues Script hinzufügen</button>
