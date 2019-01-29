@@ -1,4 +1,5 @@
 import { Hack } from "./hack";
+import { Page } from "puppeteer";
 
 export interface IApi {
     on(url: string, callback: IApiListenerCallback): void;
@@ -46,7 +47,8 @@ export interface IPlugin {
                 callback: (data) => void
             ) => void,
             output: (data) => void,
-            storage: IStorage
+            storage: IStorage,
+            page: Page
         ) => void | (() => void);
         client: (
             window: Window,

@@ -15,7 +15,7 @@ import { PluginComponent } from './Components/plugin/plugin.component';
         { path: 'addscript', component: AddscriptComponent },
 
         { path: 'script/:id', component: ScriptComponent },
-        { path: 'script/:id/plugin/:name', component: PluginComponent }
+        { path: 'script/:id/plugin/:name/:village', component: PluginComponent }
       ]}
     ])
   ],

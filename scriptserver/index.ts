@@ -87,12 +87,18 @@ app.post('/run', async function(req, res) {
         }
         io.emit('transfer', name, 'default', data);
     });
-    script.socket.on('plugin', data => io.emit('transfer', name, 'plugin', data));
+    script.socket.on('plugin', data => {
+        io.emit('transfer', name, 'plugin', data);
+        console.log('plug in', data);
+        
+    });
     script.socket.on('widget', data => {
         io.emit('transfer', name, 'widget', data);
     });
     script.socket.on('storage', data => io.emit('transfer', name, 'storage', data));
-    socketConn.on('transfer-' + name, (action, data) => script.socket.emit(action, data));
+    socketConn.on('transfer-' + name, (action, data) => {
+        script.socket.emit(action, data);
+    });
 
     SCRIPTS[name] = script;
     let response = await script.send('setup');
@@ -132,9 +138,10 @@ app.get('/lasttick', async function(req, res) {
 app.get('/openpage', async function(req, res) {
     let name = req.query.name;
     let plugin = req.query.plugin;
+    let village = req.query.village;
     let script = SCRIPTS[name];
     if (script) {
-        await script.send('openpage', plugin);
+        await script.send('openpage', { village, plugin });
         return res.json({ success: true });
     } else {
         return res.json({ success: false, message: 'script not found on the server' });

@@ -35,6 +35,7 @@ export class Hack {
     private widgetOutput: widgetOutput;
     private runpage;
     private tickListeners = [];
+    private holdPages = {};
 
     private constructor(public config: IHackConfig, api: IApi, private socket: ISocket) {
         loadPlugins(this);
@@ -86,7 +87,8 @@ export class Hack {
         });
 
         api.on('hold', res => {
-            this.hold();
+            //this.hold();
+            console.log('api hold call');
             return res({ success: true });
         });
 
@@ -97,18 +99,23 @@ export class Hack {
         api.on('openpage', (res, data) => {
             let plugin = data.plugin;
             let page = this.pluginData[plugin];
+            console.log('openpage', data);
+            
             let village = data.village;
+
             if (page.pluginSetup.hasPage && page.page) {
                 if (page.pageControl) {
                     let handlers: Function[] = [];
                     let input = callback => handlers.push(callback);
                     let output = data => this.pluginOutput(village, plugin, data);
                     if (page.pageControl.pauseTicks) {
-                        this.hold();
+                        this.hold(village, true);
                     }
                     let storage = getStorage(socket, plugin, village);
-                    this.runpage = page.pageControl.server(this, input, output, storage);
-                    socket.on(`page-${plugin}`, data => {
+                    this.runpage = page.pageControl.server(this, input, output, storage, this.browser.page[village]);
+                    console.log('listen on', `page-${plugin}-${village}`);
+                    
+                    socket.on(`page-${plugin}-${village}`, data => {
                         handlers.forEach(handler => handler(data));  
                     });
                 }
@@ -187,6 +194,11 @@ export class Hack {
         return new Promise(async resolve => {
             let all = {};
             for (let village of this.villages) {
+                if (this.holdPages[village.id]) {
+                    console.log('skipping', village);
+                    all[village.id] = {};
+                    continue;
+                }
                 let data = {};
                 this.browser.defaultPage = village.id;
                 for (let plugin of this.config.plugins) {
@@ -221,8 +233,8 @@ export class Hack {
         }
     }
 
-    hold() {
-        this.status = 'onhold';
+    hold(village: string, value: boolean) {
+        this.holdPages[village] = value;
     }
 
     pause() {

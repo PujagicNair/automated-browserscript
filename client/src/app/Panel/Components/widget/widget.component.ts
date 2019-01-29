@@ -32,15 +32,6 @@ export class WidgetComponent implements OnInit, OnDestroy {
       this.time = this.timeOf();
     }, 1000);
     this.subscribe();
-
-    this.http.post('/api/widget', { scriptID: this.scriptID, plugin: this.plugin }).subscribe((res: any) => {
-      if (res.success) {
-        this.html = res.content;
-        this.apply(res.data, res.time);
-      } else {
-        alert(res.message);
-      }
-    });
   }
 
   private subscribe() {
@@ -49,6 +40,14 @@ export class WidgetComponent implements OnInit, OnDestroy {
       this.updater = null;
     }
     if (this.scriptID && this.village && this.plugin) {
+      this.http.post('/api/widget', { scriptID: this.scriptID, plugin: this.plugin, village: this.village }).subscribe((res: any) => {
+        if (res.success) {
+          this.html = res.content;
+          this.apply(res.data, res.time);
+        } else {
+          alert(res.message);
+        }
+      });
       this.apply({}, Date.now());
       this.updater = this.socket.widget(this.scriptID, this.village, this.plugin).subscribe(data => {
         this.apply(data, Date.now());

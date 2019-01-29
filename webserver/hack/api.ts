@@ -92,6 +92,7 @@ export class TribalHackApi {
 
         router.post('/widget', async function(req: any, res) {
             let plugin = PLUGINS[req.body.plugin];
+            let village = req.body.village;
             if (plugin && plugin.pluginSetup.hasWidget && plugin.widget) {
                 let script = await ScriptModel.findById(req.body.scriptID).populate('server');
                 if (script) {
@@ -99,7 +100,7 @@ export class TribalHackApi {
                     if (remote && remote.connected) {
                         let lasttick = await remote.query(script._id, 'lasttick');
                         if (lasttick.success) {
-                            let data = lasttick.data.value[plugin.name];
+                            let data = lasttick.data.value[village][plugin.name];
                             return res.json({ success: true, content: plugin.widget, data, time: lasttick.data.time });
                         }
                     }
@@ -112,6 +113,7 @@ export class TribalHackApi {
 
         router.post('/openpage', async function(req: any, res) {
             let plugin = PLUGINS[req.body.plugin];
+            let village = req.body.village;
             if (plugin && plugin.pluginSetup.hasPage && plugin.page) {
                 let script = await ScriptModel.findById(req.body.scriptID).populate('server');
                 if (script) {
@@ -123,13 +125,13 @@ export class TribalHackApi {
                         try {
                             let socket = global.io.sockets.connected[global.sockets[req.session.user]];
                             if (socket) {
-                                socket.on(`page-${script._id}-${plugin.name}`, (data) => {
+                                socket.on(`page-${script._id}-${plugin.name}-${village}`, (data) => {
                                     let runtime = remote.runtime(script._id);
                                     if (runtime) {
-                                        runtime.emit(`page-${plugin.name}`, data);
+                                        runtime.emit(`page-${plugin.name}-${village}`, data);
                                     }
                                 });
-                                await remote.query(script._id, 'openpage', { plugin: plugin.name });
+                                await remote.query(script._id, 'openpage', { plugin: plugin.name, village });
                                 return res.json({ success: true, page: plugin.page, runtime: plugin.pageControl.client.toString() });
                             }
                         } catch (error) {
@@ -148,7 +150,7 @@ export class TribalHackApi {
         });
 
         router.post('/closepage', async function(req: any, res) {
-            let plugin = PLUGINS[req.body.plugin];
+            /*let plugin = PLUGINS[req.body.plugin];
             if (plugin && plugin.pluginSetup.hasPage && plugin.page) {
                 let script = await ScriptModel.findById(req.body.scriptID).populate('server');
                 if (script) {
@@ -175,7 +177,7 @@ export class TribalHackApi {
                 }
             } else {
                 return res.json({ success: false, message: 'plugin not found or plugin doesnt have a page' });
-            }
+            }*/
         });
 
         router.post('/kill', async function(req: any, res) {
@@ -251,7 +253,9 @@ export class TribalHackApi {
     private static pipeOutput(id: string, runtime) {
         runtime.on('default', output => global.io.emit('script-default', id, output.action, output.data));
         runtime.on('widget', output => global.io.emit('script-widget', id, output.village, output.data));
-        runtime.on('plugin', output => global.io.emit('script-plugin', id, output.plugin, output.data));
+        runtime.on('plugin', output => {
+            global.io.emit('script-plugin', id, output.village, output.plugin, output.data);
+        });
         runtime.on('storage', storage(id, (address, data) => {
             runtime.emit(address, data);
         }));

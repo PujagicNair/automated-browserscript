@@ -48,21 +48,22 @@ export class SocketService {
     return subject;
   }
 
-  plugin(scriptID: string, name: string): Subject<WidgetSub> {
+  plugin(scriptID: string, name: string, village: string): Subject<WidgetSub> {
     let subject = new Subject<WidgetSub>();
+    console.log('sub plugin');
     this.on('script-plugin').subscribe(data => {
       console.log('plugin', data);
       
-      /*if (data[0] == scriptID && data[1] == name) {
-        subject.next(data[2]);
-      }*/
+      if (data[0] == scriptID && data[1] == village && data[2] == name) {
+        subject.next(data[3]);
+      }
     });
     return subject;
   }
 
-  pluginOutput(scriptID: string, name: string) {
+  pluginOutput(scriptID: string, name: string, village: string) {
     return data => {
-      //this.socket.emit(`page-${scriptID}-${name}`, data);
+      this.socket.emit(`page-${scriptID}-${name}-${village}`, data);
     }
   }
 

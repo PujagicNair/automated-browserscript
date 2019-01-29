@@ -10,7 +10,7 @@ export default function multiVillages(hack: Hack) {
             id: row.innerHTML.match(/id=(\d+)/)[1]
         }));
 
-        if (villages.length > 1) {
+        if (villages.length) {
             for (let village of villages) {
                 let page = await hack.browser.newPage(village.id);
                 await page.goto(`https://${hack.config.serverCode}.${hack.config.serverUrl}/game.php?village=${village.id}&screen=overview`);
