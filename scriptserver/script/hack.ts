@@ -33,7 +33,7 @@ export class Hack {
     private defaultOutput: DefaultOutput;
     private pluginOutput: PluginOutput;
     private widgetOutput: widgetOutput;
-    private runpage;
+    private runpage = {};
     private tickListeners = [];
     private holdPages = {};
 
@@ -110,7 +110,7 @@ export class Hack {
                         this.hold(village, true);
                     }
                     let storage = getStorage(socket, plugin, village);
-                    this.runpage = page.pageControl.server(<any>(this.browser.scoped(village)), input, output, storage, this.browser.page[village]);
+                    this.runpage[village] = page.pageControl.server(<any>(this.browser.scoped(village)), input, output, storage, this.browser.page[village]);
                     socket.on(`page-${plugin}-${village}`, data => {
                         handlers.forEach(handler => handler(data));
                     });
@@ -121,14 +121,15 @@ export class Hack {
             }
         });
 
-        api.on('closepage', (res, plugin) => {
-            if (this.runpage) {
-                this.runpage();
-                this.runpage = undefined;
+        api.on('closepage', (res, data) => {
+            if (this.runpage[data.village]) {
+                this.runpage[data.village]();
+                delete this.runpage[data.village];
             }
-            let page = this.pluginData[plugin];
+            
+            let page = this.pluginData[data.plugin];
             if (page.pageControl && page.pageControl.pauseTicks) {
-                this.start();
+                this.hold(data.village, false);
             }
             return res({ success: true });
         });

@@ -13,7 +13,7 @@ export class PluginComponent implements OnInit, OnDestroy {
   @ViewChild('frame') private frame: ElementRef<HTMLIFrameElement>;
 
   @HostListener('window:beforeunload') private disconnect() {
-    this.http.post('/api/closepage', { scriptID: this.scriptID, plugin: this.plugin }).subscribe();
+    this.http.post('/api/closepage', { scriptID: this.scriptID, plugin: this.plugin, village: this.village }).subscribe(console.log);
   }
 
   updater;

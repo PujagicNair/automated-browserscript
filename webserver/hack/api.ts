@@ -7,7 +7,8 @@ import { IPlugin } from "./interfaces";
 import * as fs from "fs-extra";
 
 const SERVERS: { [name: string]: HackServer } = {};
-let PLUGINS: { [name: string]: IPlugin } = {};
+const PLUGINS: { [name: string]: IPlugin } = {};
+const SOCKET_LISTENERS: { [name: string]: any } = {};
 
 export class TribalHackApi {
 
@@ -147,12 +148,15 @@ export class TribalHackApi {
                         try {
                             let socket = global.io.sockets.connected[global.sockets[req.session.user]];
                             if (socket) {
-                                socket.on(`page-${script._id}-${plugin.name}-${village}`, (data) => {
+                                let cbFunction = data => {
                                     let runtime = remote.runtime(script._id);
                                     if (runtime) {
                                         runtime.emit(`page-${plugin.name}-${village}`, data);
                                     }
-                                });
+                                }
+                                socket.on(`page-${script._id}-${plugin.name}-${village}`, cbFunction);
+                                SOCKET_LISTENERS[`page-${script._id}-${plugin.name}-${village}`] = cbFunction;
+
                                 await remote.query(script._id, 'openpage', { plugin: plugin.name, village });
                                 return res.json({ success: true, page: plugin.page, runtime: plugin.pageControl.client.toString() });
                             }
@@ -172,8 +176,10 @@ export class TribalHackApi {
         });
 
         router.post('/closepage', async function(req: any, res) {
-            /*let plugin = PLUGINS[req.body.plugin];
-            if (plugin && plugin.pluginSetup.hasPage && plugin.page) {
+            let plugin = PLUGINS[req.body.plugin];
+            let village = req.body.village;
+
+            if (plugin && plugin.pluginSetup.hasPage && plugin.page && village) {
                 let script = await ScriptModel.findById(req.body.scriptID).populate('server');
                 if (script) {
                     if (script.user != req.session.user) {
@@ -182,10 +188,12 @@ export class TribalHackApi {
                     let remote = SERVERS[script.server.name];
                     if (remote && remote.connected) {
                         try {
-                            await remote.query(script._id, 'closepage', { plugin: plugin.name });
+                            await remote.query(script._id, 'closepage', { plugin: plugin.name, village });
                             let socket = global.io.sockets.connected[global.sockets[req.session.user]];
+                            
                             if (socket) {
-                                socket.off(`page-${script._id}-${plugin.name}`);
+                                let listenerName = `page-${script._id}-${plugin.name}-${village}`;
+                                socket.removeListener(listenerName, SOCKET_LISTENERS[listenerName]);
                                 return res.json({ success: true });
                             }
                         } catch (error) {
@@ -199,7 +207,7 @@ export class TribalHackApi {
                 }
             } else {
                 return res.json({ success: false, message: 'plugin not found or plugin doesnt have a page' });
-            }*/
+            }
         });
 
         router.post('/kill', async function(req: any, res) {

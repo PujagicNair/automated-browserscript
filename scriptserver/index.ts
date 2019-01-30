@@ -136,9 +136,7 @@ app.get('/lasttick', async function(req, res) {
 });
 
 app.get('/openpage', async function(req, res) {
-    let name = req.query.name;
-    let plugin = req.query.plugin;
-    let village = req.query.village;
+    let { name, plugin, village } = req.query;
     let script = SCRIPTS[name];
     if (script) {
         await script.send('openpage', { village, plugin });
@@ -149,11 +147,10 @@ app.get('/openpage', async function(req, res) {
 });
 
 app.get('/closepage', async function(req, res) {
-    let name = req.query.name;
-    let plugin = req.query.plugin;
+    let { name, plugin, village } = req.query;
     let script = SCRIPTS[name];
     if (script) {
-        await script.send('closepage', plugin);
+        await script.send('closepage', { plugin, village });
         return res.json({ success: true });
     } else {
         return res.json({ success: false, message: 'script not found on the server' });

@@ -34,6 +34,16 @@ const plugin: IPlugin = {
 
             <span class="title">Warteschlange</span>
             <span class="next">Nächste aktion: <span id="next">???</span></span>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ort</th>
+                        <th>Was</th>
+                        <th>Wie viel ?</th>
+                    </tr>
+                </thead>
+                <tbody id="queue"></tbody>
+            </table>
 
             <div class="title">Gebäude</div>
             <table>
@@ -51,14 +61,17 @@ const plugin: IPlugin = {
     `,
     pageControl: {
         pauseTicks: false,
-        server: function(_hack, input, output, storage) {
+        server: function(_browser, input, output, storage) {
             input(async data => {
                 if (data == 'init') {
                     let buildings = await storage.get('buildings', []);
-                    output({ type: 'init', buildings });
+                    let queue = await storage.get('queue', []);
+                    output({ type: 'init', buildings, queue });
                 } else if (data.type == 'add') {
                     // add data
-                    console.log(data);
+                    let queue = await storage.get('queue', []);
+                    queue.push({ unit: data.unit, screen: data.screen });
+                    await storage.set('queue', queue);
                 } else if (data.type == 'force') {
                     // force check
                 }
@@ -81,6 +94,20 @@ const plugin: IPlugin = {
                             output({ type: 'add', unit: button.getAttribute('data-unit'), screen: 'main' });
                         });
                     });
+
+                    let queueString = "";
+                    console.log(data);
+                    
+                    for (let entry of data.queue) {
+                        queueString += `
+                            <tr>
+                                <td>${entry.screen}</td>
+                                <td>${entry.unit}</td>
+                                <td>${entry.amount || '-'}</td>
+                            </tr>
+                        `;
+                    }
+                    qs("#queue").innerHTML = queueString;
                 }
             });
             return output('init');

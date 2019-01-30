@@ -28,7 +28,7 @@ const plugin: IPlugin = {
                     }, 3000);
                     await sendPage();
                 } else if (data.type == "click") {
-                    browser.page.evaluate((sel) => {
+                    await browser.page.evaluate((sel) => {
                         document.querySelector(sel).click();
                     }, data.selector);
                     await new Promise(async resolve => {
@@ -39,9 +39,9 @@ const plugin: IPlugin = {
                         }
                         browser.page.once('load', loadListen);
                         await sleep(500);
+                        browser.page.removeListener('load', loadListen);
                         if (!resolved) {
                             resolved = true;
-                            browser.page.removeListener('load', loadListen);
                             return resolve();
                         }
                     });
