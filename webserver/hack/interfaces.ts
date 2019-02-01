@@ -27,6 +27,10 @@ export interface ISocket {
     off(action: string, callback?: (data?: any) => void): void;
 }
 
+type IInput = (callback: (data: any) => void) => void;
+type IOutput = (data: any) => void;
+type IServerRuntimeOutput = void | (() => void);
+
 export interface IPlugin {
     run?(hack: Hack, storage: IStorage, requires: IPluginOutputMap): Promise<IPluginOutput>;
     pre?(hack: Hack, storage: IStorage, requires: IPluginOutputMap): Promise<void>;
@@ -41,21 +45,8 @@ export interface IPlugin {
     page?: string;
     pageControl?: {
         pauseTicks: boolean;
-        server: (
-            hack: Browser,
-            input: (
-                callback: (data) => void
-            ) => void,
-            output: (data) => void,
-            storage: IStorage
-        ) => void | (() => void);
-        client: (
-            window: Window,
-            input: (
-                callback: (data) => void
-            ) => void,
-            output: (data) => void
-        ) => void;
+        server: (browser: Browser, input: IInput, output: IOutput, storage: IStorage) => IServerRuntimeOutput;
+        client: (window: Window, input: IInput, output: IOutput) => void;
     };
     widget?: string;
 }
@@ -97,22 +88,22 @@ export type DefaultOutput = (action: string, data: any) => void;
 export type PluginOutput = (plugin: string, data: any) => void;
 
 export interface Hack {
-    //villageId: string;
     browser: Browser;
     pluginData: PluginRequireData;
     status: IStatus;
     screen: string;
+    villages: IVillage[];
     start(): void;
     tick(): Promise<any>;
-    gotoScreen(screen: string): Promise<void>;
-    hold(): void;
-    pause(): void;
+    gotoScreen(screen: string, villageid?: string, page?: string, additions?: { [key: string]: string }): Promise<void>;
+    hold(page: string, value: boolean): void;
     kill(): Promise<void>;
     stop(): Promise<void>;
     deserialize(): Promise<any>;
 }
 
 interface Browser {
+    hack: Hack;
     page: puppeteer.Page;
     pages: {[key: string]: puppeteer.Page};
     url: string;
@@ -132,4 +123,12 @@ interface Browser {
     cookie(name: string): Promise<puppeteer.Cookie>;
     screenshot(options?: puppeteer.Base64ScreenShotOptions): Promise<any>;
     kill(): Promise<void>;
+}
+
+interface IVillage {
+    name: string;
+    id: string;
+    x?: string;
+    y?: string;
+    points?: number;
 }

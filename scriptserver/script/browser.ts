@@ -1,9 +1,10 @@
 import puppeteer from 'puppeteer';
 import sleep from './helpers/sleep';
+import { Hack } from './hack';
 
 export class Browser {
 
-    constructor() {}
+    constructor(public hack: Hack) {}
 
     //page: puppeteer.Page;
     private browser: puppeteer.Browser;
@@ -39,21 +40,22 @@ export class Browser {
     }
 
     scoped(page: string): Browser {
-        let run = new Browser();
+        let run = new Browser(this.hack);
         run.browser = this.browser;
         run.defaultPage = page;
         run.pages = { [page]: this.pages[page] };
         return run;
     }
 
-    select<T = any>(selector: string, output: string): Promise<T>;
-    select<T = any>(selector: string, output: string[]): Promise<T>;
-    select<T = any>(selector: string[], output: string): Promise<T[]>;
-    select<T = any>(selector: string[], output: string[]): Promise<T[]>;
+    select<T = string>(selector: string, output: string): Promise<T>;
+    select<T = { [key: string]: string }>(selector: string, output: string[]): Promise<T>;
+    select<T = string>(selector: string[], output: string): Promise<T[]>;
+    select<T = { [key: string]: string }>(selector: string[], output: string[]): Promise<T[]>;
     select<T = any>(selector: string | string[], output: string | string[]): Promise<T | T[]> {
         if (typeof selector == "string" && typeof output == "string") {
             return this.page.evaluate(({ selector, output }) => {
-                return document.querySelector(selector)[output];
+                let elem = document.querySelector(selector);
+                return (elem || {})[output];
             }, { selector, output });
         } else if (typeof selector == "string" && Array.isArray(output)) {
             return this.page.evaluate(({ selector, output }) => {
