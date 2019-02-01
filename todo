@@ -1,13 +1,9 @@
-create script module adjustments
 api only send to right socket
 barracks plugin
 stable plugin
 smith plugin
 palladin plugin
 flag plugin
-trade plugin
+trade plugin (automated sending)
 action-queue add auto farm
 chalk & serious logs
-
-closepage !!!
-storage response 4 times

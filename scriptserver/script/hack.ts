@@ -1,4 +1,4 @@
-import { IApi, ISocket, IHackConfig, PluginRequireData, IStatus, DefaultOutput, PluginOutput, widgetOutput } from "./interfaces";
+import { IApi, ISocket, IHackConfig, PluginRequireData, IStatus, DefaultOutput, PluginOutput, widgetOutput, IVillage } from "./interfaces";
 import { Browser } from "./browser";
 import sleep from "./helpers/sleep";
 import getStorage from "./helpers/get_storage";
@@ -23,7 +23,7 @@ export class Hack {
     }
 
     // props
-    villages: { id: string, name: string }[] = [];
+    villages: IVillage[] = [];
     browser: Browser;
     pluginData: PluginRequireData;
     connected: boolean;
@@ -148,7 +148,7 @@ export class Hack {
     private setup() {
         return new Promise(async (resolve, reject) => {
             try {
-                this.browser = new Browser();
+                this.browser = new Browser(this);
                 await this.browser.start();
                 await createSession(this);
                 await multiVillages(this);
@@ -206,7 +206,7 @@ export class Hack {
                         try {
                             let storage = getStorage(this.socket, plugin, village.id);
                             let run = script.run(this, storage, providePluginsFor(data, script.requires));
-                            let time = sleep(3000, {});
+                            let time = sleep(300000, {});
                             let output = await Promise.race([ run, time ]);
     
                             if (JSON.stringify(output) == '{}') {
@@ -225,10 +225,17 @@ export class Hack {
         });
     }
 
-    gotoScreen(screen: string) {
-        if (this.screen != screen) {
-            let villageId: string = this.browser.defaultPage;
-            return this.browser.open(`${this.config.serverCode}.${this.config.serverUrl}/game.php?village=${villageId}&screen=${screen}`);
+    gotoScreen(screen: string, villageid?: string, page?: string, additions?: { [key: string]: string }) {
+        let addstr = '';
+        if (additions) {
+            Object.keys(additions).forEach(key => {
+                addstr += `&${key}=${additions[key]}`;
+            });
+        }
+        if (this.screen != screen || addstr) {
+            let browser = page ? this.browser.scoped(page) : this.browser;
+            let villageId: string = villageid || browser.defaultPage;
+            return browser.open(`${this.config.serverCode}.${this.config.serverUrl}/game.php?village=${villageId}&screen=${screen}${addstr}`);
         }
     }
 

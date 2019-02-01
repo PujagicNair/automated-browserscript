@@ -17,6 +17,14 @@ export interface IApiListenerCallback {
     (res: (data?: IApiResponseData) => res, body?: any): res | Promise<res>;
 }
 
+export interface IVillage {
+    name: string;
+    id: string;
+    x?: string;
+    y?: string;
+    points?: number;
+}
+
 export interface IApiResponseData {
     success: boolean;
     [key: string]: any;
