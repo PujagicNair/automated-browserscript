@@ -16,6 +16,16 @@ export class TribalHackApi {
 
         createModels();
 
+        let srv = await ServerModel.findOne({ name: "local1" });
+        if (!srv) {
+            new ServerModel({
+                name: "local1",
+                url: "http://localhost:4102",
+                integrity: "0xDeadFuckTard"
+            }).save();
+            console.log('added local script server');
+        }
+
         for (let plugin of fs.readdirSync(path.join(__dirname, 'plugins'))) {
             let meta: IPlugin = await import(path.join(__dirname, 'plugins', plugin));
             PLUGINS[meta.name] = meta;
@@ -80,8 +90,13 @@ export class TribalHackApi {
         });
 
         router.post('/create', async function(req: any, res) {
-            // check body
-            // create script
+            let input = req.body;
+            input.user = req.session.user;
+            input.server = (await ServerModel.findOne({ name: input.server }))._id;
+            input.plugins = input.plugins.split('\n').map(plug => plug.trim());
+            
+            await new ScriptModel(input).save();
+            return res.json({})
         });
 
         router.post('/start', async function(req: any, res) {
@@ -154,6 +169,7 @@ export class TribalHackApi {
                                         runtime.emit(`page-${plugin.name}-${village}`, data);
                                     }
                                 }
+                                
                                 socket.on(`page-${script._id}-${plugin.name}-${village}`, cbFunction);
                                 SOCKET_LISTENERS[`page-${script._id}-${plugin.name}-${village}`] = cbFunction;
 

@@ -100,9 +100,13 @@ app.post('/run', async function(req, res) {
         script.socket.emit(action, data);
     });
 
-    SCRIPTS[name] = script;
-    let response = await script.send('setup');
-    return res.json(response);
+    setTimeout(async () => {
+        SCRIPTS[name] = script;
+        let response = await script.send('setup');
+        return res.json(response);
+    }, 1500);
+
+
 });
 
 app.get('/status', async function(req, res) {

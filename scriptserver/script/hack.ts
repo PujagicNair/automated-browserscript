@@ -111,6 +111,7 @@ export class Hack {
                     }
                     let storage = getStorage(socket, plugin, village);
                     this.runpage[village] = page.pageControl.server(<any>(this.browser.scoped(village)), input, output, storage, this.browser.page[village]);
+                    
                     socket.on(`page-${plugin}-${village}`, data => {
                         handlers.forEach(handler => handler(data));
                     });
@@ -126,6 +127,8 @@ export class Hack {
                 this.runpage[data.village]();
                 delete this.runpage[data.village];
             }
+
+            socket.off(`page-${data.plugin}-${data.village}`);
             
             let page = this.pluginData[data.plugin];
             if (page.pageControl && page.pageControl.pauseTicks) {

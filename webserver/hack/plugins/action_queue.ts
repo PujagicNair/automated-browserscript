@@ -37,9 +37,9 @@ const plugin: IPlugin = {
             <table>
                 <thead>
                     <tr>
+                        <th></th>
                         <th>Ort</th>
                         <th>Was</th>
-                        <th>Wie viel ?</th>
                     </tr>
                 </thead>
                 <tbody id="queue"></tbody>
@@ -63,60 +63,95 @@ const plugin: IPlugin = {
         pauseTicks: false,
         server: function(_browser, input, output, storage) {
             input(async data => {
+                let queue = await storage.get('queue', []);
                 if (data == 'init') {
                     let buildings = await storage.get('buildings', []);
-                    let queue = await storage.get('queue', []);
                     output({ type: 'init', buildings, queue });
                 } else if (data.type == 'add') {
-                    // add data
-                    let queue = await storage.get('queue', []);
                     queue.push({ unit: data.unit, screen: data.screen });
                     await storage.set('queue', queue);
+                    output({ type: 'queue', queue });
                 } else if (data.type == 'force') {
-                    // force check
+                    await storage.set('force', true);
+                } else if (data.type == 'swap') {
+                    let tempNum = data.index + (data.dir == "up" ? -1 : 1);
+                    let temp = queue[tempNum];
+                    queue[tempNum] = queue[data.index];
+                    queue[data.index] = temp;
+                    await storage.set('queue', queue);
+                    output({ type: 'queue', queue });
+                    if (data.index === 0 || tempNum === 0) {
+                        await storage.set('force', true);
+                    }
+                } else if (data.type == 'remove') {
+                    queue.splice(data.index, 1);
+                    await storage.set('queue', queue);
+                    output({ type: 'queue', queue });
                 }
             });
         },
         client: function(window: MyWindow, input, output) {
+            let qs = sel => window.document.querySelector(sel);
+            let qsa = sel => window.document.querySelectorAll(sel);
             input(data => {
-                let qs = sel => window.document.querySelector(sel);
-                let qsa = sel => window.document.querySelectorAll(sel);
                 if (data.type == 'init') {
-                    let blstr = "";
-                    for (let build of data.buildings) {
-                        blstr += `<tr><td><img src="${build.img}"></td><td>${build.name}</td><td>${build.level}</td>
-                        <td><button class="addbtn" data-unit="${build.key}">Add</button></td>
-                        </tr>`;
-                    }
-                    qs("#buildings").innerHTML = blstr;
-                    qsa("#buildings button").forEach(button => {
-                        button.addEventListener('click', () => {
-                            output({ type: 'add', unit: button.getAttribute('data-unit'), screen: 'main' });
-                        });
-                    });
-
-                    let queueString = "";
-                    console.log(data);
-                    
-                    for (let entry of data.queue) {
-                        queueString += `
-                            <tr>
-                                <td>${entry.screen}</td>
-                                <td>${entry.unit}</td>
-                                <td>${entry.amount || '-'}</td>
-                            </tr>
-                        `;
-                    }
-                    qs("#queue").innerHTML = queueString;
+                    applyBuildings(data.buildings);
+                    applyQueue(data.queue);
+                } else if (data.type == 'queue') {
+                    applyQueue(data.queue);
                 }
             });
+
+            function applyQueue(queue) {
+                let queueString = "";
+                queue.forEach((entry, index) => {
+                    queueString += `
+                        <tr>
+                            <td><table>
+                                <tr><td>${index !== 0 ? `<i class="fa fa-arrow-up arrow" data-dir="up" data-index="${index}"></i>` : ''}</td></tr>
+                                <tr><td>${index < (queue.length - 1) ? `<i class="fa fa-arrow-down arrow" data-dir="down" data-index="${index}"></i>`: ''}</td></tr>
+                            </table></td>
+                            <td>${entry.screen}</td>
+                            <td>${entry.unit}</td>
+                            <td>${entry.amount || ''}</td>
+                            <td><i class="fa fa-times remove" data-index="${index}"></i></td>
+                        </tr>
+                    `;
+                });
+                qs("#queue").innerHTML = queueString;
+                qsa("#queue .arrow").forEach(arrow => {
+                    arrow.addEventListener('click', function() {
+                        output({ type: 'swap', index: Number(arrow.getAttribute('data-index')), dir: arrow.getAttribute('data-dir') });                        
+                    });
+                });
+                qsa("#queue .remove").forEach(times => {
+                    times.addEventListener('click', function() {
+                        output({ type: 'remove', index: Number(times.getAttribute('data-index')) });                        
+                    });
+                });
+            }
+
+            function applyBuildings(buildings) {
+                let blstr = "";
+                for (let build of buildings) {
+                    blstr += `<tr><td><img src="${build.img}"></td><td>${build.name}</td><td>${build.level}</td>
+                    <td><button class="addbtn" data-unit="${build.key}">Add</button></td>
+                    </tr>`;
+                }
+                qs("#buildings").innerHTML = blstr;
+                qsa("#buildings .addbtn").forEach(button => {
+                    button.addEventListener('click', () => {
+                        output({ type: 'add', unit: button.getAttribute('data-unit'), screen: 'main' });
+                    });
+                });
+            }
             return output('init');
         }
     },
     widget: '<table>@queueString</table>',
     run: function(hack, storage, requires) {
         return new Promise(async resolve => {
-            /*let nextTime = await storage.get('next', 0);
+            let nextTime = await storage.get('next', 0);
             let force = await storage.get('force', false);
             let queue = await storage.get('queue', []);
             let build = requires['build'].build;
@@ -176,9 +211,9 @@ const plugin: IPlugin = {
                 });
                 str += '</tr>';
                 return str;
-            }).join('');*/
+            }).join('');
             
-            return resolve({ queue: [], queueString: '' });
+            return resolve({ queue, queueString });
         });
     }
 }

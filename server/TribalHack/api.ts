@@ -22,17 +22,14 @@ export class TribalHackApi {
         
 
         TribalHack.defaultOutput = function(scriptID: string, action: string, data: any) {
-            //console.log('default', scriptID, action, data);
             global.io.emit('script-default', scriptID, action, data);
         }
 
         TribalHack.widgetOutput = function(scriptID: string, plugin: string, data: any) {
-            //console.log('widget', scriptID, plugin, data);
             global.io.emit('script-widget', scriptID, plugin, data);
         }
 
         TribalHack.pluginOutput = function(scriptID: string, plugin: string, data: any) {
-            //console.log('plugin', scriptID, plugin, data);
             global.io.emit('script-plugin', scriptID, plugin, data);
         }
     }

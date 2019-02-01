@@ -1,78 +1,49 @@
-<div *ngIf="data">
-  <!--Name<input type="text"><br>
-  Server <select [(ngModel)]="server" (change)="map = undefined; usedEffects = {}">
-    <option *ngFor="let server of data.servers" [value]="server.key">{{ server.value }}</option>
-  </select><br>
-  Map <select [disabled]="!server" [(ngModel)]="map" (change)="usedEffects = {}">
-    <option *ngFor="let map of maps" [value]="map">{{ map }}</option>
-  </select><br>
-  Effects<br>
-  <div class="effect" *ngFor="let effect of effects">
-    Use: <input type="checkbox" [(ngModel)]="usedEffects[effect.name]"><br>
-    <div class="name">Name: {{ effect.name }}</div>
-    <div class="desc">Desc: {{ effect.description }}</div>
-    <div class="price">Price: {{ effect.price }}</div>
-    <div class="author">Author: {{ effect.author }}</div>
-  </div>-->
-
-
-  <button (click)="back()">Back</button>
-  <button [disabled]="steps[step].disabled()" (click)="next()">Next</button>
-
-  <div class="title">
-    {{ steps[step].title }}
-  </div>
-
-  <div *ngIf="step == 0">
-  </div>
-  <div *ngIf="step == 1">
-    <div class="input-holder" *ngFor="let server of data.servers">
-      <input type="radio" [value]="server.key" [id]="'server' + server.key" [(ngModel)]="scope.server">
-      <label [for]="'server' + server.key">{{ server.value }}</label>
-    </div>
-  </div>
-  <div *ngIf="step == 2">
-    <div class="input-holder" *ngFor="let map of maps">
-      <input type="radio" [value]="map" [id]="'map' + map" [(ngModel)]="scope.map">
-      <label [for]="'map' + map">{{ map }}</label>
-    </div>
-  </div>
-  <div *ngIf="step == 3">
-    Tick
-    <dyn-form [data]="ticks" [(outval)]="scope.ticks"></dyn-form>
-  </div>
-  <div *ngIf="step == 4">
-    <div class="title">Notice: Not all plugins are compatible with all worlds</div>
-    <div class="plugin" *ngFor="let plugin of data.plugins">
-      Use: <input type="checkbox" [(ngModel)]="scope.plugins[plugin.name]"><br>
-      <div class="name">Name: {{ plugin.name }}</div>
-      <div class="desc">Desc: {{ plugin.description }}</div>
-      <div class="price">Requires: {{ (plugin.requires || []).join(", ") }}</div>
-    </div>
-  </div>
-  <div *ngIf="step == 5">
-    <div class="plugin" *ngFor="let config of pluginConfig">
-      <div class="show" *ngIf="config.config && config.config.length">
-        <div class="form" *ngFor="let field of config.config">
-          <dyn-form [data]="field" [(outval)]="scope.plugin_config[config.name][field.name]"></dyn-form>
-        </div>
-      </div>
-    </div>
-
-  </div>
-  <div *ngIf="step == 6">
-    <input type="text" [(ngModel)]="scope.username">
-    <input type="password" [(ngModel)]="scope.password">
-  </div>
-  <div *ngIf="step == 7">
-    <table>
-      <tr *ngFor="let sum of parseSummary()">
-        <td>{{ sum.key }}</td>
-        <td>{{ sum.value }}</td>
-      </tr>
-    </table>
-    <button (click)="submit()">Create</button>
-
-    {{ output }}
-  </div>
+<div class="form">
+  <table>
+    <tr>
+      <td>Map</td>
+      <td>
+        <input type="text" [(ngModel)]="form.map" placeholder="161">
+      </td>
+    </tr>
+    <tr>
+      <td>Server</td>
+      <td>
+        <input type="text" [(ngModel)]="form.server">
+      </td>
+    </tr>
+    <tr>
+      <td>Server Code</td>
+      <td>
+        <input type="text" [(ngModel)]="form.serverCode" placeholder="de161">
+      </td>
+    </tr>
+    <tr>
+      <td>Server Url</td>
+      <td>
+        <input type="text" [(ngModel)]="form.serverUrl">
+      </td>
+    </tr>
+    <tr>
+      <td>Username</td>
+      <td>
+        <input type="text" [(ngModel)]="form.username">
+      </td>
+    </tr>
+    <tr>
+      <td>Passwort</td>
+      <td>
+        <input type="password" [(ngModel)]="form.password">
+      </td>
+    </tr>
+    <tr>
+      <td>Plugins</td>
+      <td>
+        <textarea cols="30" rows="10" [(ngModel)]="form.plugins" placeholder="new line separated"></textarea>
+      </td>
+    </tr>
+    <tr>
+      <td><button (click)="submit()">Hinzufügen</button></td>
+    </tr>
+  </table>
 </div>

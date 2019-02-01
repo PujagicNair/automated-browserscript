@@ -62,7 +62,14 @@ export class WidgetComponent implements OnInit, OnDestroy {
   }
 
   private render(html: string, vars: any) {
-    return html.replace(/@(\w+)/g, match => (vars[match.slice(1)] || '-'));
+    return html.replace(/@(\w+)/g, match => {
+      let split = vars[match.slice(1)];
+      if (split !== undefined) {
+        return split;
+      } else {
+        return '-';
+      }
+    });
   }
 
   ngOnDestroy() {
