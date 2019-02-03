@@ -21,6 +21,26 @@ export default function getStorage(socket: ISocket, plugin: string, villageID: s
                 });
                 socket.emit('storage', { key, value: data, responseAddr, plugin, villageID, method: 'set' });
             });
+        },
+        pushArray: (key: string, data: any) => {
+            return new Promise(async resolve => {
+                let responseAddr = `storage-${Math.random().toString().replace('0.', '')}-${Date.now()}`;
+                socket.on(responseAddr, () => {
+                    socket.off(responseAddr);
+                    return resolve();
+                });
+                socket.emit('storage', { key, value: data, responseAddr, plugin, villageID, method: 'push' });
+            });
+        },
+        remove: (key: string) => {
+            return new Promise(async resolve => {
+                let responseAddr = `storage-${Math.random().toString().replace('0.', '')}-${Date.now()}`;
+                socket.on(responseAddr, () => {
+                    socket.off(responseAddr);
+                    return resolve();
+                });
+                socket.emit('storage', { key, responseAddr, plugin, villageID, method: 'remove' });
+            });
         }
     }
 }

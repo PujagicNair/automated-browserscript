@@ -13,8 +13,8 @@ const plugin: IPlugin = {
     widget: '<table>@str</table>',
     run: function(hack, storage) {
         function get() {
-        return new Promise(async resolve => {
-            let end;
+            return new Promise(async resolve => {
+                let end;
                 if (hack.screen == "main") {
                     let rows = await hack.browser.selectMultiple('[id^=main_buildrow]', 'id');
                     let data = [];
@@ -24,7 +24,7 @@ const plugin: IPlugin = {
                         set.img = img.src;
                         set.name = img.title;
                         set.key = row.match(/main_buildrow_(.+)/)[1];
-                        let levelMatch = (await hack.browser.select(`#${row} td:first-of-type span`, 'innerText')).match(/(\d+)/)
+                        let levelMatch = (await hack.browser.select(`#${row} td:first-of-type span`, 'innerText')).match(/(\d+)/);
                         set.level = levelMatch ? Number(levelMatch[1]) : 0;
                         data.push(set);
                     }

@@ -54,6 +54,8 @@ export interface IPlugin {
 export interface IStorage {
     get<T = any>(name: string, defaultValue?: T): Promise<T>;
     set(name: string, data: any): Promise<void>;
+    pushArray(name: string, data: any): Promise<void>;
+    remove(name: string): Promise<void>;
 }
 
 
@@ -109,6 +111,8 @@ interface Browser {
     url: string;
     defaultPage: string;
     start(): Promise<void>;
+    scoped(page?: string): Browser;
+    newPage(key: string): Promise<puppeteer.Page>
     open(url: string): Promise<void>;
     type(selector: string, data: string): Promise<void>;
     select<T = string>(selector: string, output: string): Promise<T>;

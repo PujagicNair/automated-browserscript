@@ -73,6 +73,8 @@ export interface IPlugin {
 export interface IStorage {
     get<T = any>(name: string, defaultValue?: T): Promise<T>;
     set(name: string, data: any): Promise<void>;
+    pushArray(name: string, data: any): Promise<void>;
+    remove(name: string): Promise<void>;
 }
 
 

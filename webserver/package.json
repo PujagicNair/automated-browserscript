@@ -28,7 +28,7 @@
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsc && node compiled/server",
+    "start": "tsc && node compiled/compiler && node compiled/server",
     "prod": "tsc && node compiled/server --prod"
   },
   "keywords": [],

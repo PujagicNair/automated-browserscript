@@ -14,8 +14,8 @@ export class Browser {
 
     start() {
         return new Promise(async resolve => {
-            //this.browser = await puppeteer.launch({ headless: false, defaultViewport: { width: 1003, height: 730 } });
-            this.browser = await puppeteer.launch({ defaultViewport: { width: 1003, height: 730 }, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+            this.browser = await puppeteer.launch({ headless: false, defaultViewport: { width: 1003, height: 730 } });
+            //this.browser = await puppeteer.launch({ defaultViewport: { width: 1003, height: 730 }, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
             this.pages["default"] = (await this.browser.pages())[0];
             await this.page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36');
             return resolve();
@@ -39,12 +39,17 @@ export class Browser {
         return this.page.type(selector, data);
     }
 
-    scoped(page: string): Browser {
+    scoped(page?: string): Browser {
+        page = page || this.defaultPage;
         let run = new Browser(this.hack);
         run.browser = this.browser;
         run.defaultPage = page;
         run.pages = { [page]: this.pages[page] };
         return run;
+    }
+
+    clone() {
+        return
     }
 
     select<T = string>(selector: string, output: string): Promise<T>;

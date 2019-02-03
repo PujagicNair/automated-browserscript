@@ -57,7 +57,9 @@ interface ITribalHackModelStatic extends Model<MTribalHackDocument, MTribalHackD
 
 interface IStorage {
     scriptID: string;
-    data: any;
+    data: {
+        value: any;
+    };
     plugin: string;
 }
 

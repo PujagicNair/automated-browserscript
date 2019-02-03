@@ -235,6 +235,7 @@ export class Hack {
         if (this.screen != screen || addstr) {
             let browser = page ? this.browser.scoped(page) : this.browser;
             let villageId: string = villageid || browser.defaultPage;
+            
             return browser.open(`${this.config.serverCode}.${this.config.serverUrl}/game.php?village=${villageId}&screen=${screen}${addstr}`);
         }
     }

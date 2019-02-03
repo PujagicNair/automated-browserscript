@@ -29,36 +29,7 @@ const plugin: IPlugin = {
             return resolve();
         });
     },
-    page: `
-        <style>
-            #error {
-                color: darkred;
-                background-color: red;
-            }
-            #success {
-                color: darkgreen;
-                background-color: lightgreen;
-            }
-        </style>
-        <div id="error"></div>
-        <div id="success"></div>
-        <div id="holder">
-            <input id="x" type="text" placeholder="X" size="4" maxlength="4">
-            <input id="y" type="text" placeholder="Y" size="4" maxlength="4">
-            <br>
-            <div id="units"></div>
-            <br>
-            <input type="text" id="dateinput" placeholder="hh:mm:ss"><br>
-            <span id="datestr"></span>
-            <br>
-            <button id="send">Send</button>
-        </div>
-    `,
-    widget: `
-        <div>
-            HTML Content of the Widget
-        </div>
-    `,
+    page: '~multi_attack.inc.html',
     pageControl: {
         pauseTicks: true,
         server: function(browser, input, output, storage) {
@@ -67,6 +38,40 @@ const plugin: IPlugin = {
                 if (data == 'init') {
                     let units = await storage.get('units', []);
                     return output({ type: 'init', units });
+                } else if (data.type == "send") {
+                    let hack = browser.hack;
+                    let input = data.data;
+                    let times = Number(input.setup.times);
+                    let tabs = {};
+                    let tabKeys = [];
+                    let ready = [];
+                    for (let i = 0; i < times; i++) {
+                        let key = `${i}-${Math.random().toString().slice(2)}`;
+                        await hack.browser.newPage(key);
+                        let tab = hack.browser.scoped(key);
+                        tabs[key] = tab;
+                        tabKeys.push(key);
+                        await hack.gotoScreen('place', browser.defaultPage, key);
+                        await sleep(200);
+                        for (let unit in input.units) if (input.units[unit]) {
+                            await sleep(100);
+                            await tab.type(`#unit_input_${unit}`, input.units[unit]);
+                        }
+                        await sleep(202);
+                        await tab.type('#place_target input', `${input.pos.x}|${input.pos.y}`);
+                        // 365|654
+                        await tab.click('#target_attack');
+                        await sleep(150);
+                        let error = await tab.select('.error_box', 'innerText');
+                        if (error) {
+                            // handle error
+                            continue;
+                        }
+                        ready.push(key);
+                        await sleep(1000);
+                    }
+                    await sleep(1000);
+                    await Promise.all(ready.map(key => tabs[key].click('#troop_confirm_go')));
                 }
             });
         },
@@ -78,7 +83,7 @@ const plugin: IPlugin = {
             input(data => {
                 if (data.type == 'init') {
                     qs('#units').innerHTML = data.units.map(unit => `
-                        ${unit.name} (${unit.max}) <input type="number" max="${unit.max}">
+                        ${unit.name} (${unit.max}) <input type="number" id="${unit.name}" max="${unit.max}">
                     `).join('<br>');
                 }
             });
@@ -88,6 +93,9 @@ const plugin: IPlugin = {
                 try {
                     let val = dateinput.value;
                     let splits = val.split(':').map(v => v.trim());
+                    if (splits.length != 3) {
+                        throw 'invalid date @local';
+                    }
                     let date = new Date();
                     date.setHours(splits[0]);
                     date.setMinutes(splits[1]); 
@@ -97,10 +105,24 @@ const plugin: IPlugin = {
                         date.setDate(date.getDate() + 1);
                     }
                     qs('#datestr').innerHTML = date.toLocaleString();
+                    qs('#indate').value = date.toUTCString();
                 } catch (error) {
-                    
+                    qs('#indate').value = "";
                 }
+            });
 
+            let holder = qs('#holder');
+            qs('#send', holder).addEventListener('click', function() {
+                let data = {};
+                let childs: HTMLDivElement[] = holder.children;
+                for (let i = 0; i < childs.length; i++) {
+                    let child = childs[i];
+                    data[child.id] = {};
+                    child.querySelectorAll('input').forEach(input => {
+                        data[child.id][input.id] = input.value;
+                    });
+                };
+                output({ type: 'send', data });
             });
 
             output('init');
