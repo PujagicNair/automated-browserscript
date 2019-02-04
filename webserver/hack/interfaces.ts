@@ -30,10 +30,13 @@ export interface ISocket {
 type IInput = (callback: (data: any) => void) => void;
 type IOutput = (data: any) => void;
 type IServerRuntimeOutput = void | (() => void);
+export type IRunFunction = (hack: Hack, storage: IStorage, requires: IPluginOutputMap) => Promise<IPluginOutput>;
+export type IPreFunction = (hack: Hack, storage: IStorage, requires: IPluginOutputMap) => Promise<void>;
+
 
 export interface IPlugin {
-    run?(hack: Hack, storage: IStorage, requires: IPluginOutputMap): Promise<IPluginOutput>;
-    pre?(hack: Hack, storage: IStorage, requires: IPluginOutputMap): Promise<void>;
+    run?: IRunFunction | string;
+    pre?: IPreFunction | string;
     name: string;
     description: string;
     pluginSetup: {
@@ -43,13 +46,16 @@ export interface IPlugin {
     }
     requires: string[];
     page?: string;
-    pageControl?: {
-        pauseTicks: boolean;
-        server: (browser: Browser, input: IInput, output: IOutput, storage: IStorage) => IServerRuntimeOutput;
-        client: (window: Window, input: IInput, output: IOutput) => void;
-    };
+    pageControl?: IPageControl | string;
     widget?: string;
 }
+
+export interface IPageControl {
+    pauseTicks: boolean;
+    server: (browser: Browser, input: IInput, output: IOutput, storage: IStorage) => IServerRuntimeOutput;
+    client: (window: Window, input: IInput, output: IOutput) => void;
+}
+
 
 export interface IStorage {
     get<T = any>(name: string, defaultValue?: T): Promise<T>;
@@ -104,7 +110,7 @@ export interface Hack {
     deserialize(): Promise<any>;
 }
 
-interface Browser {
+export interface Browser {
     hack: Hack;
     page: puppeteer.Page;
     pages: {[key: string]: puppeteer.Page};

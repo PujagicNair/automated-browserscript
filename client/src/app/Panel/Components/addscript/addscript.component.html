@@ -1,12 +1,6 @@
 <div class="form">
   <table>
     <tr>
-      <td>Map</td>
-      <td>
-        <input type="text" [(ngModel)]="form.map" placeholder="161">
-      </td>
-    </tr>
-    <tr>
       <td>Server</td>
       <td>
         <input type="text" [(ngModel)]="form.server">
@@ -15,13 +9,10 @@
     <tr>
       <td>Server Code</td>
       <td>
-        <input type="text" [(ngModel)]="form.serverCode" placeholder="de161">
-      </td>
-    </tr>
-    <tr>
-      <td>Server Url</td>
-      <td>
-        <input type="text" [(ngModel)]="form.serverUrl">
+        <select [(ngModel)]="form.serverCode">
+          <option value="de161">DE 161</option>
+          <option value="de162">DE 162</option>
+        </select>
       </td>
     </tr>
     <tr>
@@ -38,8 +29,18 @@
     </tr>
     <tr>
       <td>Plugins</td>
-      <td>
+      <!--<td>
         <textarea cols="30" rows="10" [(ngModel)]="form.plugins" placeholder="new line separated"></textarea>
+      </td>-->
+      <td>
+        <table *ngIf="plugins">
+          <tr *ngFor="let plugin of plugins">
+            <td><input type="checkbox" (click)="applyPlugin(plugin)" [disabled]="disabled(plugin)"></td>
+            <td>{{ plugin.name }}</td>
+            <td>{{ plugin.description }}</td>
+            <td *ngIf="disabled(plugin)">{{ disabled(plugin) }}</td>
+          </tr>
+        </table>
       </td>
     </tr>
     <tr>

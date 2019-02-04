@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { SocketService } from '../../Services/socket.service';
 
@@ -10,21 +10,30 @@ import { SocketService } from '../../Services/socket.service';
 })
 export class ScriptComponent implements OnInit, OnDestroy {
 
-  constructor(private route: ActivatedRoute, private http: HttpClient, private socket: SocketService) { }
+  constructor(
+    private route: ActivatedRoute,
+    private http: HttpClient,
+    private socket: SocketService,
+    private router: Router) { }
 
   script;
   defaultUpdater;
   villages = [];
-  villageID;
 
   ngOnInit() {
     let scriptID = this.route.snapshot.params.id;
+    let villageID = this.route.snapshot.params.village;
     
     this.http.get('/api/script/' + scriptID).subscribe((res: any) => {
       if (res.success) {
         let script = res.script;
         this.script = script;
-        this.villageID = script.villages[0].id;
+        if (!villageID) {
+          this.router.navigate([script.villages[0].id], { relativeTo: this.route });
+        }
+      } else {
+        alert(res.message);
+        this.router.navigate(['..', '..'], { relativeTo: this.route });
       }
     });
 
@@ -33,6 +42,10 @@ export class ScriptComponent implements OnInit, OnDestroy {
         this.script.status = data.data;
       }
     });
+  }
+
+  get villageID() {
+    return this.route.snapshot.params.village;
   }
 
   shouldShow(plugin) {

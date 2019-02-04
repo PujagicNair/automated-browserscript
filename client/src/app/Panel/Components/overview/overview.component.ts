@@ -37,6 +37,8 @@ export class OverviewComponent implements OnInit, OnDestroy {
     });
   }
 
+  confirm = window.confirm;
+
   trigger(scriptID: string, action: string) {
     this.isOperating = true;
     this.http.post('/api/' + action, { scriptID }).subscribe((res: any) => {

@@ -29,7 +29,7 @@ const plugin: IPlugin = {
             return resolve();
         });
     },
-    page: '~multi_attack.inc.html',
+    page: '~multi_attack.page.html',
     pageControl: {
         pauseTicks: true,
         server: function(browser, input, output, storage) {
@@ -118,7 +118,7 @@ const plugin: IPlugin = {
                 for (let i = 0; i < childs.length; i++) {
                     let child = childs[i];
                     data[child.id] = {};
-                    child.querySelectorAll('input').forEach(input => {
+                    qsa('input', child).forEach(input => {
                         data[child.id][input.id] = input.value;
                     });
                 };

@@ -1,12 +1,13 @@
-<a routerLink="../..">Zurück zur Übersicht</a>
+<a routerLink="../../..">Zurück zur Übersicht</a>
 
 <div class="title">
     Plugin Übersicht
 </div>
 
-<div class="script" *ngIf="script">
+<div class="script" *ngIf="script && villageID">
     <div class="villages">
-        <button *ngFor="let village of script.villages" (click)="villageID = village.id" [class.active]="villageID == village.id">{{ village.name }}</button>
+        <a *ngFor="let village of script.villages" [class.active]="villageID == village.id" [routerLink]="'../' + village.id">{{ village.name }}</a>
+        <!--<button  (click)="villageID = village.id" [class.active]="villageID == village.id">{{ village.name }}</button>-->
     </div>
     <div *ngFor="let plugin of script.plugins">
         <div class="plugin" *ngIf="shouldShow(plugin)">
@@ -15,7 +16,7 @@
                 <widget [scriptID]="script._id" [plugin]="plugin" [villageID]="villageID"></widget>
             </div>
             <div class="page" *ngIf="script.pluginSetup[plugin].hasPage">
-                <a [routerLink]="'plugin/' + plugin + '/' + villageID">Goto Plugin Page</a>
+                <a [routerLink]="'plugin/' + plugin">Goto Plugin Page</a>
             </div>
         </div>
     </div>

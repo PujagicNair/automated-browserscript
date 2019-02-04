@@ -179,8 +179,12 @@ export class Hack {
         this.status = 'running';
         (async () => {
             while (this.status == 'running') {
-                let data = await this.tick();
-                this.defaultOutput('tick', data);
+                try {
+                    let data = await this.tick();
+                    this.defaultOutput('tick', data);
+                } catch (error) {
+                    console.log('tick failed');
+                }
                 await sleep(10000);
             }
         })();
@@ -205,8 +209,8 @@ export class Hack {
                     if (script.pluginSetup.hasTicks && this.connected) {
                         try {
                             let storage = getStorage(this.socket, plugin, village.id);
-                            let run = script.run(this, storage, providePluginsFor(data, script.requires));
-                            let time = sleep(300000, {});
+                            let run = script.run(this, storage, providePluginsFor(data, script.requires)).catch(err => console.log("tick threw", plugin, err));
+                            let time = sleep(15000, {});
                             let output = await Promise.race([ run, time ]);
     
                             if (JSON.stringify(output) == '{}') {

@@ -2,14 +2,8 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "dependencies": {
-    "@types/fs-extra": "^5.0.4",
-    "@types/mongoose": "^5.3.7",
-    "@types/puppeteer": "1.11.1",
-    "@types/request": "^2.48.1",
-    "@types/socket.io": "^2.1.2",
-    "@types/socket.io-client": "^1.4.32",
     "body-parser": "^1.18.3",
     "child_process": "^1.0.2",
     "cookie-parser": "^1.4.3",
@@ -20,16 +14,25 @@
     "fs-extra": "^7.0.1",
     "mongoose": "^5.4.2",
     "path": "^0.12.7",
-    "puppeteer": "1.11.0",
     "request": "^2.88.0",
     "socket.io": "^2.2.0",
-    "socket.io-client": "^2.2.0"
+    "socket.io-client": "^2.2.0",
+    "uglify-es": "3.3.9"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/fs-extra": "^5.0.4",
+    "@types/mongoose": "^5.3.7",
+    "@types/puppeteer": "1.11.1",
+    "@types/request": "^2.48.1",
+    "@types/socket.io": "^2.1.2",
+    "@types/socket.io-client": "^1.4.32",
+    "@types/uglify-es": "3.0.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "tsc && node compiled/compiler && node compiled/server",
-    "prod": "tsc && node compiled/server --prod"
+    "prod": "tsc && node compiled/server --prod",
+    "compile": "tsc && node compiled/compiler"
   },
   "keywords": [],
   "author": "",

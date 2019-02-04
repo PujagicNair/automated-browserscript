@@ -3,7 +3,7 @@ import * as path from 'path';
 import { ScriptModel, createModels, ServerModel, MTribalHackDocument } from "./hackmodel";
 import HackServer from "./hackserver";
 import storage from "./storage";
-import { IPlugin } from "./interfaces";
+import { IPlugin, IPageControl } from "./interfaces";
 import * as fs from "fs-extra";
 
 const SERVERS: { [name: string]: HackServer } = {};
@@ -26,7 +26,7 @@ export class TribalHackApi {
             console.log('added local script server');
         }
 
-        for (let plugin of fs.readdirSync(path.join(__dirname, 'plugins'))) {
+        for (let plugin of fs.readdirSync(path.join(__dirname, 'plugins')).filter(file => fs.lstatSync(path.join(__dirname, 'plugins', file)).isFile())) {
             let meta: IPlugin = await import(path.join(__dirname, 'plugins', plugin));
             PLUGINS[meta.name] = meta;
         }
@@ -74,8 +74,13 @@ export class TribalHackApi {
     static handler() {
         let router = Router();
 
-        router.get('/worlds', function(req, res) {
-            return res.json(["161", "162", "163"]);
+        router.get('/createdata', function(req, res) {
+            let plugins = Object.keys(PLUGINS).map(key => ({
+                name: PLUGINS[key].name,
+                description: PLUGINS[key].description,
+                requires: PLUGINS[key].requires,
+            }));
+            return res.json({ plugins });
         });
 
         router.get('/scripts', async function(req: any, res) {
@@ -91,18 +96,37 @@ export class TribalHackApi {
 
         router.post('/create', async function(req: any, res) {
             let input = req.body;
+            let wordsMap = {
+                de161: {
+                    map: "161",
+                    serverUrl: "die-staemme.de"
+                },
+                de162: {
+                    map: "162",
+                    serverUrl: "die-staemme.de"
+                }
+            }
+            let wd = wordsMap[input.serverCode];
+            if (!wd) {
+                return res.json({ success: false, message: 'unknown map' });
+            }
+            Object.assign(input, wd);
             input.user = req.session.user;
-            input.server = (await ServerModel.findOne({ name: input.server }))._id;
-            input.plugins = input.plugins.split('\n').map(plug => plug.trim());
-            
+
+            let srv = await ServerModel.findOne({ name: input.server });
+            if (!srv) {
+                return res.json({ success: false, message: 'script server not found' });
+            }
+            input.server = srv._id;
+
             await new ScriptModel(input).save();
-            return res.json({})
+            return res.json({ success: true });
         });
 
         router.post('/start', async function(req: any, res) {
             let script = await ScriptModel.findOne({ _id: req.body.scriptID, user: req.session.user }).populate('server');
-            global.io.emit('default', { key: 'status', scriptID: script._id, data: 'preparing to boot' });
-            if (script) {   
+            global.io.emit('default', { key: 'status', scriptID: script._id, data: 'booting...' });
+            if (script && script.user == req.session.user) {   
                 let remote = SERVERS[script.server.name];
                 if (remote) try {
                     let runtime = await remote.runScript(script._id, script);
@@ -115,6 +139,17 @@ export class TribalHackApi {
                 }
             } else {
                 return res.json({ success: false, message: 'script not found' });
+            }
+        });
+
+        router.post('/remove', async function(req: any, res) {
+            let script = await ScriptModel.findOne({ _id: req.body.scriptID, user: req.session.user }).populate('server');
+            global.io.emit('default', { key: 'status', scriptID: script._id, data: 'removing...' });
+            if (script && script.user == req.session.user) {
+                await script.remove();
+                return res.json({ success: true });
+            } else {
+                return res.json({ success: false, message: 'script not found or does not belong to user' });
             }
         });
 
@@ -174,7 +209,7 @@ export class TribalHackApi {
                                 SOCKET_LISTENERS[`page-${script._id}-${plugin.name}-${village}`] = cbFunction;
 
                                 await remote.query(script._id, 'openpage', { plugin: plugin.name, village });
-                                return res.json({ success: true, page: plugin.page, runtime: plugin.pageControl.client.toString() });
+                                return res.json({ success: true, page: plugin.page, runtime: (<IPageControl>plugin.pageControl).client.toString() });
                             }
                         } catch (error) {
                             return res.json({ success: false, message: error });
@@ -260,6 +295,9 @@ export class TribalHackApi {
                 script = await ScriptModel.findById(input).populate('server').select(['-password']);
             } else {
                 script = input;
+            }
+            if (!script) {
+                return resolve(null);
             }
             let json = script.toJSON({ versionKey: false, depopulate: true });
 

@@ -32,7 +32,7 @@ const plugin: IPlugin = {
         hasWidget: false
     },
     requires: [],
-    page: '~send_recources.inc.html',
+    page: '~send_recources.page.html',
     pageControl: {
         pauseTicks: false,
         server: function(browser, input, output, storage) {
@@ -70,7 +70,7 @@ const plugin: IPlugin = {
                             every += (splits[1] * 60000);
                             every += (splits[2] * 1000);
                             await storage.set('order-' + now, { pos, recources, every });
-                            return output({ type: 'success', message: 'order placed' }) || output({ type: 'orders', orders: await getOrders() });
+                            return output({ type: 'success', message: 'order placed', orders: await getOrders() });
                         }
 
                         await send(browser, pos, recources).catch(error => output({ type: 'error', message: error }));
@@ -84,7 +84,7 @@ const plugin: IPlugin = {
                     await storage.set('orders', orders);
                     await storage.remove('next-' + id);
                     await storage.remove('order-' + id);
-                    return output({ type: 'orders', orders: await getOrders() });
+                    return output({ orders: await getOrders() });
                 }
             });
         },
@@ -95,6 +95,9 @@ const plugin: IPlugin = {
 
             // handle client page here
             input(data => {
+                if (data.orders) {
+                    setOrders(data.orders);
+                }
                 if (data.type == 'error') {
                     qs('#error').innerText = data.message;
                     qs('#success').innerText = '';
@@ -112,9 +115,6 @@ const plugin: IPlugin = {
                         qs("#x").value = x;
                         qs("#y").value = y;
                     });
-                    setOrders(data.orders);
-                } else if (data.type == 'orders') {
-                    setOrders(data.orders);
                 }
             });
 

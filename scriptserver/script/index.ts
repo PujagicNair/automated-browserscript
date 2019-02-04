@@ -5,6 +5,10 @@ process.on('message', function(data) {
     runtime[data.fn](...data.args);
 });
 
+process.on('unhandledRejection', function(err) {
+    console.log('threw', err);
+});
+
 const output = {
     api(response: string, data: IApiResponseData): any {
         return process.send({ type: 'api', response, data });

@@ -47,6 +47,7 @@
       <button (click)="trigger(script._id, 'kill')" [disabled]="script.status == 'offline' || isOperating || !script.connected">Terminieren</button>
       <!--<button (click)="trigger(script._id, 'pause')" [disabled]="!script.canPause">Pausieren</button>-->
       <button (click)="trigger(script._id, 'start')" [disabled]="script.status != 'offline' || isOperating || !script.connected">Starten</button>
+      <button (click)="confirm('sicher ?') && trigger(script._id, 'remove')" [disabled]="script.status != 'offline' || isOperating">Löschen</button>
     </div>
     <div class="center">
       <button class="btn spaced" routerLink="addscript">neues Script hinzufügen</button>

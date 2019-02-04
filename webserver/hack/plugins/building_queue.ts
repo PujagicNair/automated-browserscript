@@ -12,13 +12,14 @@ const plugin: IPlugin = {
         hasTicks: true
     },
     widget: '<table>@str</table>',
-    run: function(hack) {
+    run: function(hack, storage) {
         function get() {
             return new Promise(async resolve => {
                 if (hack.screen == 'main') {
                     let hasQueue = (await hack.browser.selectMultiple('#buildqueue', '')).length == 1;
                     if (!hasQueue) {
-                        return resolve({ success: true, queue: [], get });
+                        await storage.set('queue', { queue: [], time: Date.now() });
+                        return resolve({ success: true, queue: [], get, str: '<tr><td>nothing is building</td></tr>' });
                     } else {
                         let rows: string[] = await hack.browser.selectMultiple('#buildqueue > tr', 'className');
                         let buildRows = rows.filter(row => ~row.indexOf('buildorder_')).map(row => rows.indexOf(row) + 1);
@@ -35,10 +36,26 @@ const plugin: IPlugin = {
                             }
                             queue.push(row);
                         }
-                        return resolve({ success: true, queue, get, str: queue.map(row => `<tr><td>${row.name}</td><td>${row.duration}</td></tr>`).join('\n') });
+                        let str = queue.map(row => `<tr><td>${row.name}</td><td>${row.duration}</td></tr>`).join('\n');
+                        if (!str) {
+                            str = '<tr><td>nothing is building</td></tr>';
+                        }
+                        await storage.set('queue', { queue, time: Date.now() });
+                        return resolve({ success: true, queue, get, str });
                     }
                 } else {
-                    return resolve({ success: false, get });
+                    let queue = await storage.get('queue');
+                    let str;
+                    if (queue) {
+                        str = queue.queue.map(row => `<tr><td>${row.name}</td><td>${row.duration}</td></tr>`).join('\n');
+                        str += `<tr><td>updated at (${ new Date(queue.time) })</td></tr>`
+                        if (!queue.queue.length) {
+                            str = `<tr><td>nothing is building (${ new Date(queue.time) })</td></tr>`;
+                        }
+                    } else {
+                        str = '<tr><td>queue got never loaded</td></tr>';
+                    }
+                    return resolve({ success: false, get, str });
                 }
             });
         }

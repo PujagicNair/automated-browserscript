@@ -50,7 +50,7 @@ export default class HackServer {
                         }
                         
                         // sync plugins with server
-                        let plugFiles = fs.readdirSync(path.join(__dirname, 'plugins'));
+                        let plugFiles = fs.readdirSync(path.join(__dirname, 'plugins')).filter(file => fs.lstatSync(path.join(__dirname, 'plugins', file)).isFile());
                         let form = request.post(this.address + '/plugins', {
                             headers: { integrity: this.integrity, "content-type": "multipart/form-data" }
                         }, (_err, _res, body) => {
