@@ -39,6 +39,10 @@ export class Browser {
         return this.page.type(selector, data);
     }
 
+    reload() {
+        return this.page.reload({ waitUntil: 'domcontentloaded' });
+    }
+
     scoped(page?: string): Browser {
         page = page || this.defaultPage;
         let run = new Browser(this.hack);

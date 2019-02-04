@@ -133,6 +133,7 @@ export interface Browser {
     cookie(name: string): Promise<puppeteer.Cookie>;
     screenshot(options?: puppeteer.Base64ScreenShotOptions): Promise<any>;
     kill(): Promise<void>;
+    reload(): Promise<void>;
 }
 
 interface IVillage {

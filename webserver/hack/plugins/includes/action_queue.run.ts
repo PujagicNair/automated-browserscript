@@ -1,6 +1,5 @@
 import { IRunFunction } from "../../interfaces";
 
-
 export = <IRunFunction>function(hack, storage, requires) {
     return new Promise(async resolve => {
         let nextTime = await storage.get('next', 0);
@@ -57,6 +56,7 @@ export = <IRunFunction>function(hack, storage, requires) {
         if (maxDiff && next > (Date.now() + maxDiff)) {
             await storage.set('next', Date.now() + maxDiff);
             next = Date.now() + maxDiff;
+            await hack.browser.reload();
         }
 
         let str = `<tr>
