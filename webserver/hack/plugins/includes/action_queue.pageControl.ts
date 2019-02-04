@@ -12,7 +12,9 @@ export = <IPageControl>{
             let queue = await storage.get('queue', []);
             if (data == 'init') {
                 let buildings = await storage.get('buildings', []);
-                return output({ type: 'init', buildings, queue });
+                let next = await storage.get('next', Date.now());
+                let nextStr = new Date(next).toString();
+                return output({ type: 'init', buildings, queue, next: nextStr });
             } else if (data == 'reload') {
                 browser.hack.hold(browser.defaultPage, true);
                 await sleep(500);
@@ -24,12 +26,12 @@ export = <IPageControl>{
                 }, {});
                 await storage.set('buildings', builds.data);
                 return output({ type: 'reload', buildings: builds.data });
+            } else if (data == 'force') {
+                await storage.set('force', true);
             } else if (data.type == 'add') {
                 queue.push({ unit: data.unit, screen: data.screen });
                 await storage.set('queue', queue);
                 return output({ type: 'queue', queue });
-            } else if (data.type == 'force') {
-                await storage.set('force', true);
             } else if (data.type == 'swap') {
                 let tempNum = data.index + (data.dir == "up" ? -1 : 1);
                 let temp = queue[tempNum];
@@ -44,6 +46,15 @@ export = <IPageControl>{
                 queue.splice(data.index, 1);
                 await storage.set('queue', queue);
                 return output({ type: 'queue', queue });
+            } else if (data.type == 'max-diff') {
+                console.log('set max diff', data);
+                if (data.value) {
+                    await storage.set('max-diff', Number(data.value));
+                    return output({ type: 'success', message: 'set max-diff to: ' + Number(data.value).toString() });
+                } else {
+                    await storage.set('max-diff', 0);
+                    return output({ type: 'success', message: 'removed max-diff' });
+                }
             }
         });
     },
@@ -55,15 +66,19 @@ export = <IPageControl>{
             return output('reload');
         });
 
+        qs('#force').addEventListener('click', function() {
+            return output('force');
+        });
+
+        qs('#set-max-diff').addEventListener('click', function() {
+            return output({ type: 'max-diff', value: qs('#max-diff').value });
+        });
+
         input(data => {
-            if (data.type == 'init') {
-                applyBuildings(data.buildings);
-                applyQueue(data.queue);
-            } else if (data.type == 'queue') {
-                applyQueue(data.queue);
-            } else if (data.type == 'reload') {
-                applyBuildings(data.buildings);
-            }
+            if (data.queue) applyQueue(data.queue);
+            if (data.buildings) applyBuildings(data.buildings);
+            if (data.next) qs('#next').innerHTML = data.next;
+            if (data.type == 'success') qs('#success').innerHTML = data.message;
         });
 
         function applyQueue(queue) {

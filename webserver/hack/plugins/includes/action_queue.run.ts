@@ -25,7 +25,6 @@ export = <IRunFunction>function(hack, storage, requires) {
                             if (times) {
                                 let nextTime = (Number(times[1]) * 3600000) + (Number(times[2]) * 60000) + 60000;
                                 storage.set('next', Date.now() + nextTime);
-                                next.time = new Date(Date.now() + nextTime).toString();
                             }
                         }
                     } else if (built.error == "res") {
@@ -33,30 +32,38 @@ export = <IRunFunction>function(hack, storage, requires) {
                         if (times && times[2]) {
                             let nextTime = (Number(times[4]) * 1000) + 5000;
                             storage.set('next', Date.now() + nextTime);
-                            next.time = new Date(Date.now() + nextTime).toString();
                         } else if (times) {
                             let time = new Date();
                             time.setHours(Number(times[3]));
                             time.setMinutes(Number(times[4]) + 1);
                             if (time.getTime() < Date.now()) {
                                 await storage.set('next', time.getTime() + 86400000);
-                                next.time = new Date(time.getTime() + 86400000).toString();
                             } else {
                                 await storage.set('next', time.getTime());
-                                next.time = new Date(time.getTime()).toString();
                             }
                         }
                     } else if (built.error == "farm") {
                         await storage.set('next', Date.now() + 300000);
                     }
-                    queue[0].time = next.time;
                 } else {
                     queue = queue.slice(1);
                 }
             }
         }
         await storage.set('queue', queue);
-        let queueString = queue.length == 0 ? 'nothing in queue' : queue.map(entry => {
+        let next = await storage.get('next', 0);
+        let maxDiff = await storage.get('max-diff', 0);
+
+        if (maxDiff && next > (Date.now() + maxDiff)) {
+            await storage.set('next', Date.now() + maxDiff);
+            next = Date.now() + maxDiff;
+        }
+
+        let str = `<tr>
+            <td>next</td>
+            <td>${next ? new Date(next).toString() : 'immediately'}</td>
+        </tr>`;
+        let queueMap = queue.length == 0 ? 'nothing in queue' : queue.map(entry => {
             let str = '<tr>';
             Object.keys(entry).forEach(key => {
                 str += `<td style="border: 1px solid black; padding: 5px;">${key}: ${entry[key]}</td>`;
@@ -65,6 +72,6 @@ export = <IRunFunction>function(hack, storage, requires) {
             return str;
         }).join('');
         
-        return resolve({ queue, queueString });
+        return resolve({ queue, queueString: (queue.length ? (str + queueMap) : queueMap) });
     });
 }

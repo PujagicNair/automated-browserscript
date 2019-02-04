@@ -62,7 +62,10 @@ const plugin: IPlugin = {
                         }
                         if (settings.forever === "true" && settings.every && settings.every.match(/\d{1,2}:\d{2,2}:\d{2,2}/)) {
                             let now = Date.now();
-                            await storage.pushArray('orders', now);
+                            
+                            let orders = await storage.get('orders', []);
+                            orders.push(now);
+                            await storage.set('orders', orders);
 
                             let every = 0;
                             let splits: number[] = settings.every.split(':').map(Number);
@@ -70,10 +73,13 @@ const plugin: IPlugin = {
                             every += (splits[1] * 60000);
                             every += (splits[2] * 1000);
                             await storage.set('order-' + now, { pos, recources, every });
+
                             return output({ type: 'success', message: 'order placed', orders: await getOrders() });
                         }
 
-                        await send(browser, pos, recources).catch(error => output({ type: 'error', message: error }));
+                        send(browser, pos, recources)
+                            .then(() => output({ type: 'success', message: 'sent' }))
+                            .catch(error => output({ type: 'error', message: error }));
                     } else {
                         return output({ type: 'error', message: 'enter X, Y and at least 1 kind of recources' });
                     }

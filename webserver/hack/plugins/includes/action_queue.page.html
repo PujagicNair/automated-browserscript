@@ -2,14 +2,20 @@
     crossorigin="anonymous">
 
 <style>
-
+    #success {
+        background-color: lightgreen;
+        color: darkgreen;
+    }
 </style>
 
 <div class="content">
     <h2>Action Queue</h2>
 
+    <div id="success"></div>
+
     <span class="title">Warteschlange</span>
-    <span class="next">Nächste aktion: <span id="next">???</span></span>
+    <span class="next">Nächste aktion: <span id="next">?</span></span><button id="force">Check erzwingen</button><br>
+    Maximale Check Differenz <input type="text" id="max-diff"><button id="set-max-diff">Setzen</button>
     <table>
         <thead>
             <tr>
