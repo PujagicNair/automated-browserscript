@@ -14,8 +14,8 @@ export class Browser {
 
     start() {
         return new Promise(async resolve => {
-            //this.browser = await puppeteer.launch({ headless: false, defaultViewport: { width: 1003, height: 730 } });
-            this.browser = await puppeteer.launch({ defaultViewport: { width: 1003, height: 730 }, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+            this.browser = await puppeteer.launch({ headless: false, defaultViewport: { width: 1003, height: 730 } });
+            //this.browser = await puppeteer.launch({ defaultViewport: { width: 1003, height: 730 }, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
             this.pages["default"] = (await this.browser.pages())[0];
             await this.page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36');
             return resolve();
@@ -32,11 +32,20 @@ export class Browser {
     }
 
     open(url: string) {
-        return this.page.goto('https://' + url);
+        return new Promise(async resolve => {
+            await this.page.goto('https://' + url, { waitUntil: 'domcontentloaded' });
+
+        });
     }
 
-    type(selector: string, data: string) {
-        return this.page.type(selector, data);
+    type(selector: string, data: string, empty?: boolean) {
+        return new Promise(async resolve => {
+            if (empty) {
+                await this.page.evaluate(selector => document.querySelector(selector).value = "", selector);
+            }
+            await this.page.type(selector, data);
+            return resolve();
+        });
     }
 
     reload() {
