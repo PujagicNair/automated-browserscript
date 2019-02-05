@@ -36,6 +36,7 @@ export class Hack {
     private runpage = {};
     private tickListeners = [];
     private holdPages = {};
+    private strategyListeners = [];
 
     private constructor(public config: IHackConfig, api: IApi, private socket: ISocket) {
         loadPlugins(this);
@@ -174,6 +175,32 @@ export class Hack {
             }
         });
     }
+
+    /*pre(action: "tick", callback: Function) {
+        this.strategyListeners.push({ key: "pre-" + action, callback });
+    }
+
+    trigger(point: "pre" | "after", action: "tick", exec: Function) {
+        return new Promise(async resolve => {
+            let listeners = this.strategyListeners.filter(listener => listener.key == `${point}-${action}`);
+            for (let listener of listeners) {
+                let sbreak = false;
+                let strategy = {
+                    next() {
+                        
+                    },
+                    call(...args) {
+                        exec(...args);
+                    }
+                }
+                await listener.callback(this, strategy);
+            }
+        });
+    }
+
+    after() {
+
+    }*/
 
     start() {
         this.status = 'running';

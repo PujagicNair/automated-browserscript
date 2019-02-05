@@ -120,7 +120,7 @@ export interface Browser {
     scoped(page?: string): Browser;
     newPage(key: string): Promise<puppeteer.Page>
     open(url: string): Promise<void>;
-    type(selector: string, data: string): Promise<void>;
+    type(selector: string, data: string, empty?: boolean): Promise<void>;
     select<T = string>(selector: string, output: string): Promise<T>;
     select<T = { [key: string]: string }>(selector: string, output: string[]): Promise<T>;
     select<T = string>(selector: string[], output: string): Promise<T[]>;
