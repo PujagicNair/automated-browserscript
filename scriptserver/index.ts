@@ -105,8 +105,6 @@ app.post('/run', async function(req, res) {
         let response = await script.send('setup');
         return res.json(response);
     }, 1500);
-
-
 });
 
 app.get('/status', async function(req, res) {

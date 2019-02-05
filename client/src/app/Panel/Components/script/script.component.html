@@ -5,6 +5,9 @@
 </div>
 
 <div class="script" *ngIf="script && villageID">
+    <div>
+        {{ script.pid }}
+    </div>
     <div class="villages">
         <a *ngFor="let village of script.villages" [class.active]="villageID == village.id" [routerLink]="'../' + village.id">{{ village.name }}</a>
         <!--<button  (click)="villageID = village.id" [class.active]="villageID == village.id">{{ village.name }}</button>-->

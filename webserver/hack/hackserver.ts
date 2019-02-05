@@ -120,7 +120,8 @@ export default class HackServer {
                     },
                     emit: (action: string, data?: any) => {
                         this.socket.emit('transfer-' + name, action, data);
-                    }
+                    },
+                    pid: ret.pid
                 }
                 RUNTIMES[name] = runtime;
                 this.scripts.push(name);
@@ -151,6 +152,7 @@ type QueryArg = 'status' | 'lasttick' | 'openpage' | 'closepage' | 'kill' | 'vil
 interface IRuntime {
     on: (action: 'default' | 'widget' | 'plugin' | 'storage', callback: Function) => void;
     emit: (action: string, data?: any) => void;
+    pid: number;
 }
 
 interface IHackConfig {

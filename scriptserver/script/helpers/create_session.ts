@@ -10,6 +10,7 @@ export default function createSession(hack: Hack): Promise<void> {
         await hack.browser.type('#user', hack.config.username);
         await hack.browser.type('#password', hack.config.password);
         await hack.browser.click('a.btn-login');
+        
         await sleep(1000);
 
         // check login success

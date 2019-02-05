@@ -27,14 +27,15 @@ const plugin: IPlugin = {
                                 return resolve({ success: false, message: 'queue is full or failed to load queue', error: 'queue' });
                             }
                             let hasButton = await hack.browser.selectMultiple(`[id^=main_buildlink_${building}]:not([id$=cheap]):not([style="display:none"])`, 'id');
+                            
                             if (hasButton.length == 1) {
                                 await hack.browser.page.evaluate((button) => {
                                     document.getElementById(button).click();
                                 }, hasButton[0]);
                                 return resolve({ success: true });
                             } else {
-                                let inactive: string = await hack.browser.select(`[id^=main_buildlink_${building}]:not([id$=cheap]) + .inactive`, 'innerText');
-                                if (inactive.match(/[0-9]{2,2}:[0-9]{2,2}$/)) {
+                                let inactive: string = await hack.browser.select(`#main_buildrow_${building} .build_options .inactive`, 'innerText');
+                                if (inactive && inactive.match(/[0-9]{2,2}:[0-9]{2,2}$/)) {
                                     return resolve({ success: false, message: inactive, error: 'res' });
                                 } else {
                                     return resolve({ success: false, message: inactive, error: 'farm' });

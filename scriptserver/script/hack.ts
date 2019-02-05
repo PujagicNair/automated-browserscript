@@ -57,7 +57,7 @@ export class Hack {
         api.on('setup', async res => {
             try {
                 await this.setup();
-                return res({ success: true });
+                return res({ success: true, pid: process.pid });
             } catch (error) {
                 return res({ success: false, message: error });
             }
@@ -153,7 +153,6 @@ export class Hack {
                 await this.browser.start();
                 await createSession(this);
                 await multiVillages(this);
-
                 // handle multiple villages
                 (async () => {
                     await sleep(500);
