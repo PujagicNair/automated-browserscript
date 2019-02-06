@@ -6,6 +6,13 @@
         background-color: lightgreen;
         color: darkgreen;
     }
+
+    .title {
+        margin-top: 25px;
+        font-size: 1.6em;
+        font-weight: bold;
+        font-family: sans-serif;
+    }
 </style>
 
 <div class="content">
@@ -13,15 +20,21 @@
 
     <div id="success"></div>
 
-    <span class="title">Warteschlange</span>
-    <span class="next">Nächste aktion: <span id="next">?</span></span><button id="force">Check erzwingen</button><br>
-    Maximale Check Differenz <input type="text" id="max-diff"><button id="set-max-diff">Setzen</button>
+    <div class="actions">
+        Nächste aktion: <span id="next">?</span>
+        <button id="force">Check erzwingen</button>
+    </div>
+
+    Maximale Check Differenz <input type="text" id="max-diff"> <button id="set-max-diff">Setzen</button>
+
+    <div class="title">Warteschlange</div>
     <table>
         <thead>
             <tr>
-                <th></th>
-                <th>Ort</th>
+                <th>Swap</th>
+                <th>Bild</th>
                 <th>Was</th>
+                <th>Del</th>
             </tr>
         </thead>
         <tbody id="queue"></tbody>
@@ -39,5 +52,4 @@
         </thead>
         <tbody id="buildings"></tbody>
     </table>
-    <button id="reload">Reload Buildings</button>
 </div>

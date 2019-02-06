@@ -20,7 +20,7 @@ const plugin: IPlugin = {
     },
     page: '~action_queue.page.html',
     pageControl: '~action_queue.pageControl.js',
-    widget: '<table>@queueString</table>',
+    widget: '~action_queue.widget.html',
     run: '~action_queue.run.js'
 }
 

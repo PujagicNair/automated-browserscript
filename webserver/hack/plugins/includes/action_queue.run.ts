@@ -3,14 +3,10 @@ import { IRunFunction } from "../../interfaces";
 export = <IRunFunction>function(hack, storage, requires) {
     return new Promise(async resolve => {
         let nextTime = await storage.get('next', 0);
-        let force = await storage.get('force', false);
         let queue = await storage.get('queue', []);
         let build = requires['build'].build;
 
-        if (queue.length && (Date.now() > nextTime || force)) {
-            if (force) {
-                await storage.set('force', false);
-            }
+        if (queue.length && (Date.now() > nextTime)) {
             let next = queue[0];
             await hack.gotoScreen(next.screen);
             if (next.screen = "main") {
@@ -59,19 +55,21 @@ export = <IRunFunction>function(hack, storage, requires) {
             await hack.browser.reload();
         }
 
-        let str = `<tr>
-            <td>next</td>
-            <td>${next ? new Date(next).toString() : 'immediately'}</td>
-        </tr>`;
-        let queueMap = queue.length == 0 ? 'nothing in queue' : queue.map(entry => {
-            let str = '<tr>';
-            Object.keys(entry).forEach(key => {
-                str += `<td style="border: 1px solid black; padding: 5px;">${key}: ${entry[key]}</td>`;
-            });
-            str += '</tr>';
+        let nextStr = next ? new Date(next).toString() : 'immediately';
+        let buildings = await storage.get('buildings', []);
+        let queueMap = queue.map(entry => {
+            let building = buildings.find(building => building.key == entry.unit) || {};
+            let str = `
+                <tr>
+                    <td style="border-top: 1px solid black">
+                        <img src="${building.img}">
+                    </td>
+                    <td style="border-top: 1px solid black">${building.name}</td>
+                </tr>
+            `;
             return str;
         }).join('');
         
-        return resolve({ queue, queueString: (queue.length ? (str + queueMap) : queueMap) });
+        return resolve({ queue, queueStr: queueMap || '<tr><td colspan="2">nothing in queue</td></tr>', nextStr });
     });
 }

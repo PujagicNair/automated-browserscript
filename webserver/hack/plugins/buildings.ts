@@ -25,6 +25,8 @@ const plugin: IPlugin = {
                         set.name = img.title;
                         set.key = row.match(/main_buildrow_(.+)/)[1];
                         let levelMatch = (await hack.browser.select(`#${row} td:first-of-type span`, 'innerText')).match(/(\d+)/);
+                        let max = await hack.browser.select(`#${row} td:nth-of-type(2).inactive`, 'innerText');
+                        set.max = !!max;
                         set.level = levelMatch ? Number(levelMatch[1]) : 0;
                         data.push(set);
                     }

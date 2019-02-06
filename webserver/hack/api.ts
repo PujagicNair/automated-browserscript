@@ -307,7 +307,7 @@ export class TribalHackApi {
             let remote = SERVERS[script.server.name];
             if (remote && remote.connected) {
                 let response = await remote.query(script._id, 'status');
-                json.pid = remote.runtime(script._id).pid;
+                //json.pid = remote.runtime(script._id).pid;
                 if (response.success) {
                     json.status = response.status.value;
                 } else {
