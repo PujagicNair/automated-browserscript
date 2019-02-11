@@ -1,7 +1,7 @@
 import { IPlugin } from "../interfaces";
 
 const plugin: IPlugin = {
-    
+    tickrate: 2,
     name: 'screen-sync',
     description: 'See the screen where the script is currently at',
     requires: [],

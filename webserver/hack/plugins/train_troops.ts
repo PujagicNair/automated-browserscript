@@ -3,6 +3,7 @@ import { IPlugin } from "../interfaces";
 
 const plugin: IPlugin = {
     name: 'train-troops',
+    tickrate: 30,
     description: 'Automatically train troops including orders for building over time',
     pluginSetup: {
         hasPage: true,

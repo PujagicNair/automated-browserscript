@@ -48,6 +48,7 @@ export interface IPlugin {
     page?: string;
     pageControl?: IPageControl | string;
     widget?: string;
+    tickrate?: number;
 }
 
 export interface IPageControl {

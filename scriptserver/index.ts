@@ -85,7 +85,25 @@ app.post('/run', async function(req, res) {
         if (data.action == 'status') {
             STATUS[name] = { value: data.data, time: Date.now() };
         } else if (data.action == 'tick') {
-            LASTTICKS[name] = { value: data.data, time: Date.now() };
+            let last = LASTTICKS[name] || {};
+            let tick = {};
+            for (let vid in data.data) {
+                tick[vid] = {};
+                for (let plugin in data.data[vid]) {
+                    tick[vid][plugin] = { data: data.data[vid][plugin], time: new Date().toUTCString() };
+                }
+            }
+            for (let vid in last) {
+                if (!tick[vid]) {
+                    tick[vid] = {};
+                }
+                for (let plugin in last[vid]) {
+                    if (!tick[vid][plugin]) {
+                        tick[vid][plugin] = last[vid][plugin];
+                    }
+                }
+            }
+            LASTTICKS[name] = tick;
         }
         io.emit('transfer', name, 'default', data);
     });

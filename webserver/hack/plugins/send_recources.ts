@@ -25,6 +25,7 @@ function send(browser, pos, recources) {
 
 const plugin: IPlugin = {
     name: 'send-recources',
+    tickrate: 10,
     description: 'automatically send recources to another village',
     pluginSetup: {
         hasPage: true,

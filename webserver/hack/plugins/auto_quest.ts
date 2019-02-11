@@ -2,7 +2,7 @@ import { IPlugin } from "../interfaces";
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 const plugin: IPlugin = {
-    
+    tickrate: 30,
     name: 'auto-quest',
     description: 'Beendet Quests automatisch wenn sie abgeschlossen sind',
     requires: [],

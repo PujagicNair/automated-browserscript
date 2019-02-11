@@ -1,7 +1,7 @@
 import { IPlugin } from "../interfaces";
 
 const plugin: IPlugin = {
-    
+    tickrate: 1,
     name: 'recource-sync',
     description: 'See your recources realtime in the browser',
     requires: [],
@@ -13,32 +13,19 @@ const plugin: IPlugin = {
     widget: `
         <table>
             <tr>
-                <td>wood</td>
-                <td>@wood</td>
-                <td>@wood_str</td>
-            </tr>
-            <tr>
-                <td>stone</td>
-                <td>@stone</td>
-                <td>@stone_str</td>
-            </tr>
-            <tr>
-                <td>iron</td>
-                <td>@iron</td>
-                <td>@iron_str</td>
-            </tr>
-            <tr>
-                <td>storage</td>
-                <td>@storage</td>
+                <td style="border-right: 1px solid; padding: 0 8px 0 5px;"><i class="ds-icon" data-type="wood"></i>@wood</td>
+                <td style="border-right: 1px solid; padding: 0 8px 0 5px;"><i class="ds-icon" data-type="stone"></i>@stone</td>
+                <td style="border-right: 1px solid; padding: 0 8px 0 5px;"><i class="ds-icon" data-type="iron"></i>@iron</td>
+                <td style="border-right: 1px solid; padding: 0 8px 0 5px;"><i class="ds-icon" data-type="storage"></i>@storage</td>
+                <td style="padding: 0 8px 0 5px;"><i class="ds-icon" data-type="farm"></i>@pop_current_label/@pop_max_label</td>
             </tr>
         </table>
     `,
     run(hack) {
         return new Promise(async resolve => {
-            let data = await hack.browser.selectMultiple('#wood, #stone, #iron, #storage', ['id', 'innerText', 'title']);
+            let data = await hack.browser.selectMultiple('#wood, #stone, #iron, #storage, #pop_current_label, #pop_max_label', ['id', 'innerText']);
             let res = data.reduce((acc, self) => {
                 acc[self.id] = self.innerText;
-                acc[self.id + '_str'] = self.title;
                 return acc;
             }, {});
             return resolve(res);

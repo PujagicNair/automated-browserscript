@@ -171,8 +171,8 @@ export class TribalHackApi {
                     if (remote && remote.connected) {
                         let lasttick = await remote.query(script._id, 'lasttick');
                         if (lasttick.success) {
-                            let data = lasttick.data.value[village][plugin.name];
-                            return res.json({ success: true, content: plugin.widget, data, time: lasttick.data.time });
+                            let data = lasttick.data[village][plugin.name];
+                            return res.json({ success: true, content: plugin.widget, data });
                         } else {
                             return res.json(lasttick);
                         }

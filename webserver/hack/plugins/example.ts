@@ -3,6 +3,7 @@ import { IPlugin } from "../interfaces";
 
 const plugin: IPlugin = {
     name: 'plugin-name',
+    tickrate: 10,
     description: 'description of the plugin',
     pluginSetup: {
         hasPage: true,

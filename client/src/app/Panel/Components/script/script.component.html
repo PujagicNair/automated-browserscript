@@ -1,26 +1,40 @@
 <a routerLink="../../..">Zurück zur Übersicht</a>
 
 <div class="title">
-    Plugin Übersicht
+  Plugin Übersicht
 </div>
 
 <div class="script" *ngIf="script && villageID">
-    <div>
-        {{ script.pid }}
-    </div>
-    <div class="villages">
-        <a *ngFor="let village of script.villages" [class.active]="villageID == village.id" [routerLink]="'../' + village.id">{{ village.name }}</a>
-        <!--<button  (click)="villageID = village.id" [class.active]="villageID == village.id">{{ village.name }}</button>-->
-    </div>
-    <div *ngFor="let plugin of script.plugins">
-        <div class="plugin" *ngIf="shouldShow(plugin)">
-            <div class="header">{{ plugin }}</div>
-            <div class="widget" *ngIf="script.pluginSetup[plugin].hasWidget">
-                <widget [scriptID]="script._id" [plugin]="plugin" [villageID]="villageID"></widget>
-            </div>
-            <div class="page" *ngIf="script.pluginSetup[plugin].hasPage">
-                <a [routerLink]="'plugin/' + plugin">Goto Plugin Page</a>
-            </div>
+  <div>
+    {{ script.pid }}
+  </div>
+  <div class="villages">
+    <a *ngFor="let village of script.villages" [class.active]="villageID == village.id" [routerLink]="'../' + village.id">{{
+      village.name }}</a>
+    <!--<button  (click)="villageID = village.id" [class.active]="villageID == village.id">{{ village.name }}</button>-->
+  </div>
+  <div *ngFor="let plugin of script.plugins">
+    <div class="plugin" *ngIf="shouldShow(plugin)">
+      <div class="headline">
+
+        <div class="close" *ngIf="script.pluginSetup[plugin].hasWidget">
+          <div class="icon" (click)="closed[villageID + plugin] = !closed[villageID + plugin]">
+            {{ closed[villageID + plugin] ? '&#9660;' : '&#9650;' }}
+          </div>
         </div>
+
+        <div class="name">
+          {{ plugin }}
+          <div class="page-link" *ngIf="script.pluginSetup[plugin].hasPage">
+            <a [routerLink]="'plugin/' + plugin">Plugin Page</a>
+          </div>
+        </div>
+
+      </div>
+      <div class="widget-content" *ngIf="script.pluginSetup[plugin].hasWidget && !closed[villageID + plugin]">
+        <widget [scriptID]="script._id" [plugin]="plugin" [villageID]="villageID"></widget>
+      </div>
     </div>
+
+  </div>
 </div>

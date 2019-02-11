@@ -1,6 +1,33 @@
 .plugin {
     margin-bottom: 15px;
-    .header {
+    border: 1px solid black;
+
+    .close {
+        width: 22pt;
+        height: 22pt;
+        float: left;
+        position: relative;
+        .icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-50%);
+            height: 16px;
+            width: 16px;
+            background-color: white;
+            line-height: 16px;
+            text-align: center;
+            font-weight: bold;
+            color: #c1a264;
+            border: 1px solid currentColor;
+        }
+    }
+
+    .page-link {
+        float: right;
+        margin-right: 12px;
+    }
+    /*.header {
         background-color: #c1a264;
         padding: 8px 12px;
         border-top-left-radius: 8px;
@@ -16,7 +43,7 @@
     & > *:last-of-type {
         border-bottom-left-radius: 8px;
         border-bottom-right-radius: 8px;
-    }
+    }*/
 }
 
 .active {

@@ -43,12 +43,12 @@ export class WidgetComponent implements OnInit, OnDestroy {
       this.http.post('/api/widget', { scriptID: this.scriptID, plugin: this.plugin, village: this.village }).subscribe((res: any) => {
         if (res.success) {
           this.html = res.content;
-          this.apply(res.data, res.time);
+          let { data, time } = res.data;
+          this.apply(data, new Date(time).getTime());
         } else {
           alert(res.message);
         }
       });
-      this.apply({}, Date.now());
       this.updater = this.socket.widget(this.scriptID, this.village, this.plugin).subscribe(data => {
         this.apply(data, Date.now());
       });
@@ -62,7 +62,7 @@ export class WidgetComponent implements OnInit, OnDestroy {
   }
 
   private render(html: string, vars: any) {
-    return html.replace(/@(\w+)/g, match => {
+    return html.replace(/@([\w_]+)/g, match => {
       let split = vars[match.slice(1)];
       if (split !== undefined) {
         return split;
@@ -79,10 +79,12 @@ export class WidgetComponent implements OnInit, OnDestroy {
 
   timeOf(): string {
     if (!this.lastTime) {
-      return '-';
+      return null;
     } else {
       let ago = Date.now() - this.lastTime;
-      if (ago < 60000) {
+      if (ago < 5000) {
+        return null;
+      } else if (ago < 60000) {
         return (ago / 1000).toFixed(0) + "s ago";
       } else {
         return (ago / 60000).toFixed(0) + "m ago";

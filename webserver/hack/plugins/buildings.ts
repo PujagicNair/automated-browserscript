@@ -3,6 +3,7 @@ import { IPlugin } from "../interfaces";
 
 const plugin: IPlugin = {
     name: 'buildings',
+    tickrate: 6,
     description: 'shows the levels of buildings you have',
     requires: [],
     pluginSetup: {

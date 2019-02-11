@@ -41,7 +41,7 @@ export class SocketService {
   widget(scriptID: string, villageID: string, name: string): Subject<WidgetSub> {
     let subject = new Subject<WidgetSub>();
     this.on('script-widget').subscribe(data => {
-      if (data[0] == scriptID && data[1] == villageID) {
+      if (data[0] == scriptID && data[1] == villageID && data[2][name]) {
         subject.next(data[2][name]);
       }
     });

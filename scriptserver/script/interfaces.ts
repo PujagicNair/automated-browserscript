@@ -40,6 +40,7 @@ export interface IPlugin {
     run?(hack: Hack, storage: IStorage, requires: IPluginOutputMap): Promise<IPluginOutput>;
     pre?(hack: Hack, storage: IStorage, requires: IPluginOutputMap): Promise<void>;
     name: string;
+    tickrate: number;
     description: string;
     pluginSetup: {
         hasWidget: boolean;

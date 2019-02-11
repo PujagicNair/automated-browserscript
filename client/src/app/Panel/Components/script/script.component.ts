@@ -20,6 +20,8 @@ export class ScriptComponent implements OnInit, OnDestroy {
   defaultUpdater;
   villages = [];
 
+  closed = {};
+
   ngOnInit() {
     let scriptID = this.route.snapshot.params.id;
     let villageID = this.route.snapshot.params.village;

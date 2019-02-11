@@ -2,7 +2,7 @@ import { IPlugin } from "../interfaces";
 
 
 const plugin: IPlugin = {
-    
+    tickrate: 2,
     name: 'building-queue',
     description: 'Utility plugin used to check the building queue',
     requires: [],

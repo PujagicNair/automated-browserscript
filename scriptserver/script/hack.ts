@@ -149,10 +149,17 @@ export class Hack {
     private setup() {
         return new Promise(async (resolve, reject) => {
             try {
+                console.log('got in setup');
                 this.browser = new Browser(this);
                 await this.browser.start();
+                console.log('opened browser');
+                
                 await createSession(this);
+                console.log('made session');
+                
                 await multiVillages(this);
+                console.log('mvstrat loaded');
+                
                 // handle multiple villages
                 (async () => {
                     await sleep(500);
@@ -202,16 +209,18 @@ export class Hack {
     }*/
 
     start() {
+        let ticks = 0;
         this.status = 'running';
         (async () => {
             while (this.status == 'running') {
                 try {
-                    let data = await this.tick();
+                    let data = await this.tick(ticks);
                     this.defaultOutput('tick', data);
                 } catch (error) {
                     console.log('tick failed');
                 }
-                await sleep(10000);
+                ticks++;
+                await sleep(1000);
             }
         })();
     }
@@ -220,7 +229,7 @@ export class Hack {
         this.tickListeners.push(callback);
     }
 
-    tick() {
+    tick(ticks: number) {
         return new Promise(async resolve => {
             let all = {};
             for (let village of this.villages) {
@@ -232,6 +241,12 @@ export class Hack {
                 this.browser.defaultPage = village.id;
                 for (let plugin of this.config.plugins) {
                     let script = this.pluginData[plugin];
+
+                    // handle tick rate
+                    if (ticks % script.tickrate !== 0) {
+                        continue;
+                    }
+
                     if (script.pluginSetup.hasTicks && this.connected) {
                         try {
                             let storage = getStorage(this.socket, plugin, village.id);
