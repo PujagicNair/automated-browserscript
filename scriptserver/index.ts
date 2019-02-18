@@ -118,10 +118,18 @@ app.post('/run', async function(req, res) {
         script.socket.emit(action, data);
     });
 
+    io.emit('transfer', name, 'default', { action: 'status', data: 'received start message' });
+
     setTimeout(async () => {
         SCRIPTS[name] = script;
+        io.emit('transfer', name, 'default', { action: 'status', data: 'creating script process' });
         let response = await script.send('setup');
-        return res.json(response);
+        if (response.success) {
+            return res.json({ success: true });    
+        } else {
+            io.emit('transfer', name, 'default', { action: 'status', data: 'failed to start (' + response.message + ')' });
+            return res.json({ success: false });
+        }
     }, 1500);
 });
 
@@ -184,11 +192,10 @@ app.get('/kill', async function (req, res) {
         return res.json({ success: false, message: 'script not found on the server' });
     }
     let exit = await script.send('kill');
-    if (exit.success) {
-        delete SCRIPTS[name];
-        delete LASTTICKS[name];
-        delete STATUS[name];
-    }
+    script.exit();
+    delete SCRIPTS[name];
+    delete LASTTICKS[name];
+    delete STATUS[name];
     io.emit('transfer', name, 'default', { action: 'status', data: 'offline' });
     return res.json(exit);
 });

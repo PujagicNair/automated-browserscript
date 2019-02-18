@@ -1,10 +1,13 @@
-import { IPlugin } from "../interfaces";
-let sleep = ms => new Promise(r => setTimeout(r, ms));
+import { IPlugin, Browser } from "../interfaces";
+let sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
-function send(browser, pos, recources) {
+type Recources = { wood: string, stone: string, iron: string };
+
+function send(browser: Browser, pos: { x: number, y: number }, recources: Recources) {
     return new Promise(async (resolve, reject) => {
         await browser.hack.gotoScreen('market', null, browser.defaultPage, { mode: 'send' });
         try {
+            await sleep(500);
             await browser.type('#market-send-form input[name=wood]', recources.wood);
             await browser.type('#market-send-form input[name=stone]', recources.stone);
             await browser.type('#market-send-form input[name=iron]', recources.iron);
@@ -15,6 +18,7 @@ function send(browser, pos, recources) {
             if (error) {
                 return reject(error);
             }
+            await sleep(500);
             await browser.click('#market-confirm-form [type=submit]');
             return resolve();
         } catch (error) {
@@ -30,13 +34,14 @@ const plugin: IPlugin = {
     pluginSetup: {
         hasPage: true,
         hasTicks: true,
-        hasWidget: false
+        hasWidget: true
     },
+    widget: '@wdStr',
     requires: [],
     page: '~send_recources.page.html',
     pageControl: {
         pauseTicks: false,
-        server: function(browser, input, output, storage) {
+        server: function(browser, input, output, storage, util) {
             function getOrders() {
                 return new Promise(async resolve => {
                     let orders = await storage.get('orders', []);
@@ -68,11 +73,7 @@ const plugin: IPlugin = {
                             orders.push(now);
                             await storage.set('orders', orders);
 
-                            let every = 0;
-                            let splits: number[] = settings.every.split(':').map(Number);
-                            every += (splits[0] * 3600000);
-                            every += (splits[1] * 60000);
-                            every += (splits[2] * 1000);
+                            let every = util.time.fromString(settings.every);
                             await storage.set('order-' + now, { pos, recources, every });
 
                             return output({ type: 'success', message: 'order placed', orders: await getOrders() });
@@ -160,20 +161,52 @@ const plugin: IPlugin = {
             output('init');
         }
     },
-    run: function(hack, storage) {
+    run: function(hack, storage, _required, util) {
         return new Promise(async resolve => {
-            let orders = await storage.get('orders', []);
-            for (let orderID of orders) {
-                let next = await storage.get('next-' + orderID, 0);
-                if (Date.now() > next) {
-                    let order = await storage.get('order-' + orderID, null);
-                    if (order) {
-                        await send(hack.browser, order.pos, order.recources).catch(console.error);
-                        await storage.set('next-' + orderID, Date.now() + order.every);
-                    }
+            let ordersIDs = (await storage.get('orders', []));
+            let orders = [];
+            
+            for (let id of ordersIDs) {
+                let order: any = {};
+                let om: any = await storage.get('order-' + id, {});
+                order.id = id;
+                order.next = await storage.get('next-' + id, 0);
+                order.every = om.every;
+                order.to = om.pos;
+                order.recources = om.recources;
+                orders.push(order);
+            }
+            
+            orders = orders.sort((a, b) => a.next - b.next);
+            for (let order of orders) {
+                if (Date.now() > order.next) {
+                    //await send(hack.browser, order.to, order.recources).catch(console.error);
+                    await storage.set('next-' + order.id, Date.now() + order.every);
                 }
             }
-            return resolve();
+            let wdStr: string;
+            if (orders.length !== 0) {
+                let str = '<table><tr><th>To</th><th>Wood</th><th>Stone</th><th>Iron</th><th>Next</th><th>Every</th></tr>';
+                for (let order of orders) {
+                    let village = hack.villages.find(village => village.x == order.to.x && village.y == order.to.y);
+                    str += `
+                        <tr>
+                            <td>${order.to.x}|${order.to.y}${village ? ' (' + village.name + ')' : ''}</td>
+                            <td style="text-align:center;">${order.recources.wood || '-'}</td>
+                            <td style="text-align:center;">${order.recources.stone || '-'}</td>
+                            <td style="text-align:center;">${order.recources.iron || '-'}</td>
+                            <td>${order.next ? new Date(order.next).toLocaleString() : 'now'}</td>
+                            <td>${util.time.toFormatString(order.every)}</td>
+                        </tr>
+                    `;
+                }
+                str += '</table>';
+                wdStr = str;
+            } else {
+                wdStr = 'No active send orders';
+            }
+
+            return resolve({ wdStr });
         });
     }
 }

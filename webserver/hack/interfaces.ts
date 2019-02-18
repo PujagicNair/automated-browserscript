@@ -10,11 +10,8 @@ export interface IApiListener {
     callback: IApiListenerCallback;
 }
 
-
-enum res { good = 'true' }
-export interface IApiListenerCallback {
-    (res: (data?: IApiResponseData) => res, body?: any): res | Promise<res>;
-}
+enum res { }
+export type IApiListenerCallback = (res: (data?: IApiResponseData) => res, body?: any) => res | Promise<res>;
 
 export interface IApiResponseData {
     success: boolean;
@@ -30,8 +27,8 @@ export interface ISocket {
 type IInput = (callback: (data: any) => void) => void;
 type IOutput = (data: any) => void;
 type IServerRuntimeOutput = void | (() => void);
-export type IRunFunction = (hack: Hack, storage: IStorage, requires: IPluginOutputMap) => Promise<IPluginOutput>;
-export type IPreFunction = (hack: Hack, storage: IStorage, requires: IPluginOutputMap) => Promise<void>;
+export type IRunFunction = (hack: Hack, storage: IStorage, requires: IPluginOutputMap, util: IUtil) => Promise<IPluginOutput>;
+export type IPreFunction = (hack: Hack, storage: IStorage, requires: IPluginOutputMap, util: IUtil) => Promise<void>;
 
 
 export interface IPlugin {
@@ -53,7 +50,7 @@ export interface IPlugin {
 
 export interface IPageControl {
     pauseTicks: boolean;
-    server: (browser: Browser, input: IInput, output: IOutput, storage: IStorage) => IServerRuntimeOutput;
+    server: (browser: Browser, input: IInput, output: IOutput, storage: IStorage, util: IUtil) => IServerRuntimeOutput;
     client: (window: Window, input: IInput, output: IOutput) => void;
 }
 
@@ -109,6 +106,34 @@ export interface Hack {
     kill(): Promise<void>;
     stop(): Promise<void>;
     deserialize(): Promise<any>;
+    getVillage(id: string): IVillage;
+}
+
+interface IUtil {
+    distance(village1: Coord, village2: Coord): number;
+    distance(village1: string, village2: string): number;
+    distance(village1: Coord, village2: string): number;
+    distance(village1: string, village2: Coord): number;
+    troopSpeed(troops: ITroops): number;
+    travelSpeed(troops: ITroops, dist: number): number;
+    parseCoords(coord: string | Coord): Coord;
+    time: ITimeUtil;
+    random(max: number): number;
+    random(min: number, max: number): number;
+    random<T>(arr: T[]): T;
+}
+
+interface ITroops {
+
+}
+
+interface ITimeUtil {
+    minutes(amt: number | string): number;
+    seconds(amt: number | string): number;
+    hours(amt: number | string): number;
+    fromString(str: string): number;
+    toLocaleString(ms: number): string;
+    toFormatString(ms: number): string;
 }
 
 export interface Browser {
@@ -130,17 +155,21 @@ export interface Browser {
     selectMultiple<T = { [key: string]: string }>(selector: string, output: string[]): Promise<T[]>;
     exit(): Promise<void>;
     click(selector: string): Promise<void>;
-    click(coords: { x: number, y: number }): Promise<void>;
+    click(coords: Coord): Promise<void>;
     cookie(name: string): Promise<puppeteer.Cookie>;
     screenshot(options?: puppeteer.Base64ScreenShotOptions): Promise<any>;
     kill(): Promise<void>;
     reload(): Promise<void>;
 }
 
-interface IVillage {
+interface Coord {
+    x?: number;
+    y?: number;
+}
+
+interface IVillage extends Coord {
     name: string;
     id: string;
-    x?: string;
-    y?: string;
     points?: number;
+    coords: string;
 }

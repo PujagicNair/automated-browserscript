@@ -54,22 +54,21 @@ export = <IRunFunction>function(hack, storage, requires) {
             next = Date.now() + maxDiff;
             await hack.browser.reload();
         }
-
-        let nextStr = next ? new Date(next).toString() : 'immediately';
         let buildings = await storage.get('buildings', []);
-        let queueMap = queue.map(entry => {
-            let building = buildings.find(building => building.key == entry.unit) || {};
-            let str = `
-                <tr>
-                    <td style="border-top: 1px solid black">
-                        <img src="${building.img}">
-                    </td>
-                    <td style="border-top: 1px solid black">${building.name}</td>
-                </tr>
-            `;
-            return str;
-        }).join('');
+
+        let wdStr: string;
+        if (queue.length !== 0) {
+
+            wdStr = `<div>next check: <b>${next ? new Date(next).toLocaleString() : 'immediately'}</b></div><br><table><tr><th>Bild</th><th>Name</th></tr>`;
+            for (let entry of queue) {
+                let building = buildings.find(building => building.key == entry.unit) || {};
+                wdStr += `<tr><td style="border-top: 1px solid black"><img src="${building.img}"></td><td style="border-top: 1px solid black">${building.name}</td></tr>`;
+            }
+            wdStr += '</table>';
+        } else {
+            wdStr = 'nothing in queue';
+        }
         
-        return resolve({ queue, queueStr: queueMap || '<tr><td colspan="2">nothing in queue</td></tr>', nextStr });
+        return resolve({ queue, wdStr });
     });
 }

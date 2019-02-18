@@ -6,6 +6,7 @@ import providePluginsFor from "./helpers/plugin_require_provider";
 import loadPlugins from "./helpers/plugin_loader";
 import createSession from "./helpers/create_session";
 import multiVillages from "./helpers/multi_village";
+import util from './helpers/util';
 
 export class Hack {
 
@@ -34,9 +35,7 @@ export class Hack {
     private pluginOutput: PluginOutput;
     private widgetOutput: widgetOutput;
     private runpage = {};
-    private tickListeners = [];
     private holdPages = {};
-    private strategyListeners = [];
 
     private constructor(public config: IHackConfig, api: IApi, private socket: ISocket) {
         loadPlugins(this);
@@ -87,12 +86,6 @@ export class Hack {
             return res({ success: true });
         });
 
-        api.on('hold', res => {
-            //this.hold();
-            console.log('api hold call');
-            return res({ success: true });
-        });
-
         api.on('deserialize', async res => {
             return res({ success: true, data: this.deserialize() });
         });
@@ -111,7 +104,7 @@ export class Hack {
                         this.hold(village, true);
                     }
                     let storage = getStorage(socket, plugin, village);
-                    this.runpage[village] = page.pageControl.server(<any>(this.browser.scoped(village)), input, output, storage, this.browser.page[village]);
+                    this.runpage[village] = page.pageControl.server(this.browser.scoped(village), input, output, storage, util);
                     
                     socket.on(`page-${plugin}-${village}`, data => {
                         handlers.forEach(handler => handler(data));
@@ -149,26 +142,27 @@ export class Hack {
     private setup() {
         return new Promise(async (resolve, reject) => {
             try {
-                console.log('got in setup');
+                this.status = 'opeining virtual browser';
                 this.browser = new Browser(this);
                 await this.browser.start();
-                console.log('opened browser');
+                this.status = 'created virtual browser';
                 
                 await createSession(this);
-                console.log('made session');
+                this.status = 'logged in to tribal wars (' + this.config.serverCode + ')';
                 
                 await multiVillages(this);
-                console.log('mvstrat loaded');
+                this.status = 'loaded multivillage strategy';
                 
                 // handle multiple villages
                 (async () => {
                     await sleep(500);
+                    this.status = 'preloading plugins';
                     for (let village of this.villages) {
                         this.browser.defaultPage = village.id;
                         for (let plugin of this.config.plugins) {
                             let meta = this.pluginData[plugin];
                             if (meta.pre) {                    
-                                await meta.pre(this, getStorage(this.socket, plugin, village.id), providePluginsFor(this.pluginData, meta.requires));
+                                await meta.pre(this, getStorage(this.socket, plugin, village.id), providePluginsFor(this.pluginData, meta.requires), util);
                             }
                         }
                     }
@@ -182,40 +176,33 @@ export class Hack {
         });
     }
 
-    /*pre(action: "tick", callback: Function) {
-        this.strategyListeners.push({ key: "pre-" + action, callback });
-    }
-
-    trigger(point: "pre" | "after", action: "tick", exec: Function) {
-        return new Promise(async resolve => {
-            let listeners = this.strategyListeners.filter(listener => listener.key == `${point}-${action}`);
-            for (let listener of listeners) {
-                let sbreak = false;
-                let strategy = {
-                    next() {
-                        
-                    },
-                    call(...args) {
-                        exec(...args);
-                    }
-                }
-                await listener.callback(this, strategy);
-            }
-        });
-    }
-
-    after() {
-
-    }*/
-
     start() {
         let ticks = 0;
         this.status = 'running';
+        let tickdata = {};
         (async () => {
             while (this.status == 'running') {
                 try {
-                    let data = await this.tick(ticks);
+                    let data = await this.tick(ticks, tickdata);
                     this.defaultOutput('tick', data);
+                    let tick = {};
+                    for (let vid in data) {
+                        tick[vid] = {};
+                        for (let plugin in data[vid]) {
+                            tick[vid][plugin] = data[vid][plugin];
+                        }
+                    }
+                    for (let vid in tickdata) {
+                        if (!tick[vid]) {
+                            tick[vid] = {};
+                        }
+                        for (let plugin in tickdata[vid]) {
+                            if (!tick[vid][plugin]) {
+                                tick[vid][plugin] = tickdata[vid][plugin];
+                            }
+                        }
+                    }
+                    tickdata = tick;
                 } catch (error) {
                     console.log('tick failed');
                 }
@@ -225,11 +212,7 @@ export class Hack {
         })();
     }
 
-    nextTick(callback) {
-        this.tickListeners.push(callback);
-    }
-
-    tick(ticks: number) {
+    tick(ticks: number, tickdata: any) {
         return new Promise(async resolve => {
             let all = {};
             for (let village of this.villages) {
@@ -238,6 +221,7 @@ export class Hack {
                     continue;
                 }
                 let data = {};
+                tickdata[village.id] = tickdata[village.id] || {};
                 this.browser.defaultPage = village.id;
                 for (let plugin of this.config.plugins) {
                     let script = this.pluginData[plugin];
@@ -250,7 +234,8 @@ export class Hack {
                     if (script.pluginSetup.hasTicks && this.connected) {
                         try {
                             let storage = getStorage(this.socket, plugin, village.id);
-                            let run = script.run(this, storage, providePluginsFor(data, script.requires)).catch(err => console.log("tick threw", plugin, err));
+                            let run = script.run(this, storage, providePluginsFor(tickdata[village.id], script.requires), util)
+                                .catch(err => console.log("tick threw", plugin, err));
                             let time = sleep(15000, {});
                             let output = await Promise.race([ run, time ]);
     
@@ -258,6 +243,7 @@ export class Hack {
                                 console.log('plugin tick timed out:', plugin);
                             }
                             data[plugin] = output;
+                            tickdata[village.id][plugin] = data[plugin];
                         } catch (error) {
                             console.log(error);
                         }
@@ -312,6 +298,10 @@ export class Hack {
             data[key] = JSON.parse(JSON.stringify(this[key]));
         });
         return data;
+    }
+
+    getVillage(id: string) {
+        return this.villages.find(village => village.id == id);
     }
 
     // getter / setter

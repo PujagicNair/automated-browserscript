@@ -27,6 +27,10 @@ export class Script {
         });
     }
 
+    exit() {
+        this.runtime.kill();
+    }
+
     socket: ISocket = {
         on: (action: string, callback) => {
             return this.on({ type: 'socket', action }, function(data) {

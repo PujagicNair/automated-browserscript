@@ -33,9 +33,9 @@ export function createModels() {
         integrity: String
     });
 
-    ScriptModel = global.connection.model('script', STribalHack);
-    StorageModel = global.connection.model('storage', SStorage);
-    ServerModel = global.connection.model('server', SServer);
+    ScriptModel = <any>global.connection.model('script', STribalHack);
+    StorageModel = <any>global.connection.model('storage', SStorage);
+    ServerModel = <any>global.connection.model('server', SServer);
 }
 
 interface ITribalHackModel {

@@ -9,7 +9,7 @@ export function createUserModel() {
         name: String
     });
 
-    User = global.connection.model('user', SUser);
+    User = <any>global.connection.model('user', SUser);
 }
 
 interface IUser {

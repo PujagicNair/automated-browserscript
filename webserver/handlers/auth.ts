@@ -7,8 +7,8 @@ export class Auth {
 
     static handler() {
         global.io.on('connection', async function(socket) {
-            if (socket.handshake.session.user) {
-                global.sockets[socket.handshake.session.user] = socket.id;
+            if (socket.handshake['session'].user) {
+                global.sockets[socket.handshake['session'].user] = socket.id;
             }
         });
 

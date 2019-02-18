@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, Input, ElementRef, ViewChild } from '@angular/core';
 import { SocketService } from '../../Services/socket.service';
 import { HttpClient } from '@angular/common/http';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'widget',
@@ -20,12 +21,12 @@ export class WidgetComponent implements OnInit, OnDestroy {
 
   constructor(private socket: SocketService, private http: HttpClient) { }
 
-  updater;
-  data;
+  updater: Subscription;
+  data: any;
   html: string;
   time: string;
   lastTime: number;
-  interval;
+  interval: NodeJS.Timer;
 
   ngOnInit() {
     this.interval = setInterval(() => {

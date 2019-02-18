@@ -21,7 +21,7 @@ const plugin: IPlugin = {
     },
     page: '~action_queue.page.html',
     pageControl: '~action_queue.pageControl.js',
-    widget: '~action_queue.widget.html',
+    widget: '@wdStr',
     run: '~action_queue.run.js'
 }
 

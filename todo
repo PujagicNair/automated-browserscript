@@ -1,8 +1,26 @@
-api only send to right socket
-barracks plugin
-stable plugin
-smith plugin
-palladin plugin
-flag plugin
-action-queue add auto farm
-chalk & serious logs
+util
+    distance
+    troop speed
+    time
+        min
+        sec
+        hour
+        fromString 
+    timeString
+    random
+
+plugins
+    recource overflow
+    train troops
+    village scan
+    send recources (rework)
+    market trade
+    incomming attacks
+    save troops
+
+hack
+    shared storage
+    tick merged to require (test)
+
+widgets
+    style

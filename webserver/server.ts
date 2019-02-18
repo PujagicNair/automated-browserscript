@@ -25,12 +25,8 @@ import { TribalHackApi } from './hack/api';
     createUserModel();
     
     if (process.argv[2] == '--prod') {
-        let collections = mongodb.connection.collections;
-        for (let key of Object.keys(collections)) {
-            let collection = collections[key];
-            await collection.drop();
-        }
-        console.log('dropped all datasets');
+        await global.connection.dropDatabase();
+        console.log('droped database');
     }
 
     TribalHackApi.setup();
@@ -51,7 +47,7 @@ import { TribalHackApi } from './hack/api';
     app.use(Auth.handler());
     app.use(Router.handler());
     app.use(express.static(path.join(__dirname, 'public')));
-    app.get('**', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+    app.get('**', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
     // boot
     http.listen(80);

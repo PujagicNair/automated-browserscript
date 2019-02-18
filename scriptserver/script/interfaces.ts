@@ -11,11 +11,8 @@ export interface IApiListener {
     callback: IApiListenerCallback;
 }
 
-
-enum res { good = 'true' }
-export interface IApiListenerCallback {
-    (res: (data?: IApiResponseData) => res, body?: any): res | Promise<res>;
-}
+enum res { }
+export type IApiListenerCallback = (res: (data?: IApiResponseData) => res, body?: any) => res | Promise<res>;
 
 export interface IVillage {
     name: string;
@@ -23,6 +20,41 @@ export interface IVillage {
     x?: string;
     y?: string;
     points?: number;
+    coords?: string;
+}
+
+export interface IUtil {
+    distance(village1: Coord, village2: Coord): number;
+    distance(village1: string, village2: string): number;
+    distance(village1: Coord, village2: string): number;
+    distance(village1: string, village2: Coord): number;
+    troopSpeed(troops: ITroops): number;
+    travelSpeed(troops: ITroops, dist: number): number;
+    parseCoords(coord: string | Coord): Coord;
+    time: ITimeUtil;
+    troops: ITroops;
+    random(max: number): number;
+    random(min: number, max: number): number;
+    random<T>(arr: T[]): T;
+}
+
+interface Coord {
+    x?: number;
+    y?: number;
+}
+
+
+interface ITroops {
+    [name: string]: number;
+}
+
+interface ITimeUtil {
+    minutes(amt: number | string): number;
+    seconds(amt: number | string): number;
+    hours(amt: number | string): number;
+    fromString(str: string): number;
+    toLocaleString(ms: number): string;
+    toFormatString(ms: number): string;
 }
 
 export interface IApiResponseData {
@@ -37,8 +69,8 @@ export interface ISocket {
 }
 
 export interface IPlugin {
-    run?(hack: Hack, storage: IStorage, requires: IPluginOutputMap): Promise<IPluginOutput>;
-    pre?(hack: Hack, storage: IStorage, requires: IPluginOutputMap): Promise<void>;
+    run?(hack: Hack, storage: IStorage, requires: IPluginOutputMap, util: IUtil): Promise<IPluginOutput>;
+    pre?(hack: Hack, storage: IStorage, requires: IPluginOutputMap, util: IUtil): Promise<void>;
     name: string;
     tickrate: number;
     description: string;
@@ -52,13 +84,13 @@ export interface IPlugin {
     pageControl?: {
         pauseTicks: boolean;
         server: (
-            hack: Hack,
+            browser: Browser,
             input: (
                 callback: (data) => void
             ) => void,
             output: (data) => void,
             storage: IStorage,
-            page: Page
+            util: IUtil
         ) => void | (() => void);
         client: (
             window: Window,
@@ -74,7 +106,6 @@ export interface IPlugin {
 export interface IStorage {
     get<T = any>(name: string, defaultValue?: T): Promise<T>;
     set(name: string, data: any): Promise<void>;
-    pushArray(name: string, data: any): Promise<void>;
     remove(name: string): Promise<void>;
 }
 
@@ -92,7 +123,7 @@ export interface IRuntime {
     [_id: string]: Hack;
 }
 
-export type IStatus = 'offline' | 'ready' | 'running' | 'onhold' | 'paused';
+export type IStatus = 'offline' | 'ready' | 'running' | 'onhold' | 'paused' | string;
 
 export interface PluginRequireData {
     [name: string]: IPlugin;
