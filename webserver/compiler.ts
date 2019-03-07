@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as uglify from 'uglify-es';
 
 let pathof = (...segs) => path.join(__dirname, 'hack', 'plugins', ...segs);
-let pathofOld = (...segs) => path.join(__dirname, '..', 'hack', 'plugins', ...segs);
+let pathofOld = (...segs) => path.join(__dirname, '..', '..', 'webserver', 'hack', 'plugins', ...segs);
 
 let files_to_copy = fs.readdirSync(pathofOld('includes')).filter(file => file.endsWith("html"));
 for (let file of files_to_copy) fs.copyFileSync(pathofOld('includes', file), pathof('includes', file));

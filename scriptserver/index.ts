@@ -1,14 +1,13 @@
 import express from 'express';
 import * as bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
-import * as fs from 'fs-extra';
 import * as path from 'path';
 import socketIO from 'socket.io';
 import { Server } from 'http';
 import { Script } from './script';
 import multer from 'multer';
 
-const integrity = fs.readFileSync('.integrity').toString();
+const integrity = '0xDeadFuckTard';
 let app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -59,7 +58,7 @@ app.post('/plugins', upload.array('file'), function(req, res) {
     console.log('plugins are updated');
     
     Object.keys(SCRIPTS).forEach(async name => {
-        let s = await SCRIPTS[name].send('reload');
+        await SCRIPTS[name].send('reload');
     });
     return res.json({ success: true });
 });
@@ -137,7 +136,8 @@ app.get('/status', async function(req, res) {
     let name = req.query.name;
     let status = STATUS[name];
     if (status) {
-        return res.json({ success: true, status });
+        let ws = await SCRIPTS[name].send('ws');
+        return res.json({ success: true, status, ws: ws.url });
     } else {
         return res.json({ success: false, message: 'no status entry for this script' });
     }

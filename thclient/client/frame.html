@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>RCB - Loading</title>
+    <style>
+        body, html {
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+        canvas {
+            width: 100vw;
+            height: calc(100vh - 25px);
+        }
+        nav {
+            height: 25px;
+            width: 100%;
+            display: flex;
+            position: relative;
+        }
+        table {
+            height: 100%;
+        }
+        #url {
+            flex: 1;
+            display: block;
+        }
+    </style>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+</head>
+
+<body>
+    <nav>
+        <table>
+            <tr height="25">
+                <td>
+                    <i class="fa fa-arrow-left" id="back"></i>
+                </td>
+                <td>
+                    <i class="fa fa-arrow-right" id="forward"></i>
+                </td>
+                <td>
+                    <i class="fas fa-redo-alt" id="reload"></i>
+                </td>
+            </tr>
+        </table>
+        <input type="url" id="url">
+        <table>
+            <tr height="25">
+                <td>
+                    <select id="tabs"></select>
+                </td>
+                <td>
+                    <i class="fa fa-plus" id="newtab"></i>
+                </td>
+                <td>
+                    <i class="fa fa-times" id="closetab"></i>
+                </td>
+            </tr>
+        </table>
+    </nav>
+    <canvas width="1200" height="800"></canvas>
+    <script>
+        const { ipcRenderer } = require('electron');
+        let activePage = 0;
+        let pages;
+        let canvas = document.querySelector('canvas');
+        let ctx = canvas.getContext('2d');
+        ipcRenderer.on('data', (_event, data) => {
+            let img = new Image();
+            img.src = data;
+            img.onload = () => {
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            };
+        });
+        ipcRenderer.on('meta', (_event, data) => {
+            document.querySelector('title').innerText = 'RCB - ' + data.title;
+            let url = document.getElementById('url');
+            if (url != document.activeElement) {
+                url.value = data.url;
+            }
+        });
+        ipcRenderer.on('viewport', (_event, size) => {
+            canvas.width = size.width;
+            canvas.height = size.height;
+        });
+        ipcRenderer.on('tabs', (_event, newpages) => {
+            pages = newpages;
+        });
+        ipcRenderer.on('pages', (_event, newpages) => {
+            pages = newpages;
+            if (document.activeElement !== document.getElementById('tabs')) {
+                setPageTabs();
+            }
+            let url = document.getElementById('url');
+            if (document.activeElement !== url) {
+                url.value = pages[activePage].url;
+            }
+            document.querySelector('title').innerText = "RCB @ " + pages[activePage].title;
+        });
+        ipcRenderer.on('changepage', (_event, index) => {
+            activePage = index;
+            document.getElementById('tabs').value = index;
+        });
+
+        document.getElementById('newtab').addEventListener('click', () => {
+            ipcRenderer.send('newtab');
+        });
+
+        document.getElementById('closetab').addEventListener('click', () => {
+            ipcRenderer.send('closetab', activePage);
+        });
+
+        document.getElementById('back').addEventListener('click', () => {
+            ipcRenderer.send('back');
+        });
+
+        document.getElementById('forward').addEventListener('click', () => {
+            ipcRenderer.send('forward');
+        });
+
+        document.getElementById('reload').addEventListener('click', () => {
+            ipcRenderer.send('reload');
+        });
+
+        document.getElementById('tabs').addEventListener('change', (event) => {
+            ipcRenderer.send('switchtab', document.getElementById('tabs').value);
+        });
+
+        window.onmousewheel = (event) => ipcRenderer.send('scroll', event.deltaY);
+        canvas.onmousemove = (event) => ipcRenderer.send('mousemove', getMousePos(event));
+        canvas.onclick = (event) => ipcRenderer.send('click', getMousePos(event));
+        canvas.onmousedown = (event) => ipcRenderer.send('mousedown', getMousePos(event));
+        canvas.onmouseup = (event) => ipcRenderer.send('mouseup', getMousePos(event));
+
+        window.onkeypress = (event) => {
+            if (document.activeElement instanceof HTMLInputElement) {
+                if (event.key == 'Enter') {
+                    let url = document.getElementById('url');
+                    ipcRenderer.send('navigate', url.value);
+                    url.blur();
+                }
+            } else {
+                ipcRenderer.send('keypress', String.fromCharCode(event.charCode));
+            }
+        }
+
+        function getMousePos(event) {
+            let scaleX = canvas.width / canvas.clientWidth;
+            let scaleY = canvas.height / canvas.clientHeight;
+            let lx = event.offsetX;
+            let x = Math.round(lx  * scaleX);
+            let ly = event.offsetY;
+            let y = Math.round(ly  * scaleY);
+            return {
+                x,
+                y
+            };
+        }
+    
+        function setPageTabs() {
+            let pageStr = pages.map(page => `<option value="${page.index}">${page.title}</option>`).join();
+            let tabs = document.getElementById('tabs');
+            tabs.innerHTML = pageStr;
+            tabs.value = pages[activePage].index;
+        }
+    </script>
+</body>
+</html>

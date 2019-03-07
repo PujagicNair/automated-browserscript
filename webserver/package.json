@@ -22,7 +22,6 @@
   "devDependencies": {
     "@types/fs-extra": "^5.0.4",
     "@types/mongoose": "^5.3.7",
-    "@types/puppeteer": "1.11.1",
     "@types/request": "^2.48.1",
     "@types/socket.io": "^2.1.2",
     "@types/socket.io-client": "^1.4.32",
@@ -30,7 +29,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsc && node compiled/compiler && node compiled/server",
+    "start": "tsc && node ../dist/webserver/compiler && node ../dist/webserver/server",
     "prod": "tsc && node compiled/server --prod",
     "compile": "tsc && node compiled/compiler"
   },

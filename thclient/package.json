@@ -1,0 +1,24 @@
+{
+  "name": "thclient",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "tsc && electron dist/main.js",
+    "electron": "electron"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/electron": "1.6.10",
+    "electron": "4.0.6"
+  },
+  "dependencies": {
+    "@types/puppeteer": "1.12.1",
+    "express": "4.16.4",
+    "fs": "0.0.1-security",
+    "puppeteer": "1.12.2"
+  }
+}

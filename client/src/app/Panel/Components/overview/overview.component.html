@@ -38,6 +38,10 @@
               <th>Anzahlt Plugins</th>
               <td>{{ script.plugins.length }}</td>
             </tr>
+            <tr>
+              <th>Remote WS</th>
+              <td>{{ script.ws }}</td>
+            </tr>
           </table>
         </div>
         <div class="button-holder" *ngIf="script.status != 'offline' &&  script.connected">

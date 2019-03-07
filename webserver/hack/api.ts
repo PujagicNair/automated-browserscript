@@ -104,6 +104,10 @@ export class TribalHackApi {
                 de162: {
                     map: "162",
                     serverUrl: "die-staemme.de"
+                },
+                de163: {
+                    map: "163",
+                    serverUrl: "die-staemme.de"
                 }
             }
             let wd = wordsMap[input.serverCode];
@@ -309,6 +313,7 @@ export class TribalHackApi {
                 let response = await remote.query(script._id, 'status');
                 if (response.success) {
                     json.status = response.status.value;
+                    json.ws = response.ws;
                 } else {
                     json.status = 'offline';
                 }

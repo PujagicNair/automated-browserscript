@@ -71,6 +71,10 @@ export class Hack {
             return res({ success: true, villages: this.villages });
         });
 
+        api.on('ws', res => {
+            return res({ success: true, url: this.browser.wsEndpoint });
+        });
+
         api.on('kill', async res => {
             this.connected = false;
             this.stop();

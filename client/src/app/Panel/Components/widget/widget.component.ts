@@ -26,7 +26,7 @@ export class WidgetComponent implements OnInit, OnDestroy {
   html: string;
   time: string;
   lastTime: number;
-  interval: NodeJS.Timer;
+  interval: any;
 
   ngOnInit() {
     this.interval = setInterval(() => {
