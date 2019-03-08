@@ -13,6 +13,14 @@
         font-weight: bold;
         font-family: sans-serif;
     }
+
+    .hold {
+        display: flex;
+    }
+
+    .flex {
+        flex: 1;
+    }
 </style>
 
 <div class="content">
@@ -27,29 +35,69 @@
 
     Maximale Check Differenz <input type="text" id="max-diff"> <button id="set-max-diff">Setzen</button>
 
-    <div class="title">Warteschlange</div>
-    <table>
-        <thead>
-            <tr>
-                <th>Swap</th>
-                <th>Bild</th>
-                <th>Was</th>
-                <th>Del</th>
-            </tr>
-        </thead>
-        <tbody id="queue"></tbody>
-    </table>
+    <div class="hold">
+        <div class="flex">
+            <div class="title">Gebäude</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bild</th>
+                        <th>Name</th>
+                        <th>Stufe</th>
+                        <th>Verbessern</th>
+                    </tr>
+                </thead>
+                <tbody id="buildings"></tbody>
+            </table>
+        </div>
+        <div class="flex">
+            <div class="title">Warteschlange</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Swap</th>
+                        <th>Bild</th>
+                        <th>Was</th>
+                        <th>Del</th>
+                    </tr>
+                </thead>
+                <tbody id="queue"></tbody>
+            </table>
+        </div>
+    </div>
 
-    <div class="title">Gebäude</div>
-    <table>
-        <thead>
-            <tr>
-                <th>Bild</th>
-                <th>Name</th>
-                <th>Stufe</th>
-                <th>Verbessern</th>
-            </tr>
-        </thead>
-        <tbody id="buildings"></tbody>
-    </table>
+    <div class="hold">
+        <div class="flex">
+            <div class="title">Truppen</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bild</th>
+                        <th>Name</th>
+                        <th>Anzahl</th>
+                        <th>Ausbilden</th>
+                    </tr>
+                </thead>
+                <tbody id="troops"></tbody>
+            </table>
+        </div>
+        <div class="flex">
+            <div class="title">Warteschlange</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bild</th>
+                        <th>Name</th>
+                        <th>Anzahl</th>
+                        <th>Ausbilden</th>
+                    </tr>
+                </thead>
+                <tbody id="troop-queue"></tbody>
+            </table>
+        </div>
+    </div>
+
+
+
+
 </div>

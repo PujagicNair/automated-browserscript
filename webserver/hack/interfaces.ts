@@ -114,17 +114,23 @@ interface IUtil {
     distance(village1: string, village2: string): number;
     distance(village1: Coord, village2: string): number;
     distance(village1: string, village2: Coord): number;
-    troopSpeed(troops: ITroops): number;
-    travelSpeed(troops: ITroops, dist: number): number;
+    troopSpeed(troops: ITroop[]): number;
+    travelSpeed(troops: ITroop[], dist: number): number;
     parseCoords(coord: string | Coord): Coord;
     time: ITimeUtil;
     random(max: number): number;
     random(min: number, max: number): number;
     random<T>(arr: T[]): T;
+    troops: ITroop[];
+
 }
 
-interface ITroops {
-
+interface ITroop {
+    key: string;
+    img: string;
+    costs: any;
+    speed: number;
+    space: number;
 }
 
 interface ITimeUtil {

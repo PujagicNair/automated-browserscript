@@ -15,12 +15,12 @@ export class Browser {
     start() {
         return new Promise(async (resolve, reject) => {
             try {
-                // this.browser = await puppeteer.launch({ headless: false, defaultViewport: { width: 1003, height: 730 } });
-                this.browser = await puppeteer.launch({ devtools: false, headless: true, defaultViewport: { width: 1003, height: 730 }, args: [
+                this.browser = await puppeteer.launch({ headless: false, defaultViewport: { width: 1003, height: 730 } });
+                /*this.browser = await puppeteer.launch({ devtools: false, headless: true, defaultViewport: { width: 1003, height: 730 }, args: [
                     '--no-sandbox',
                     '--disable-setuid-sandbox',
                     '--remote-debugging-port=9222'
-                ]});
+                ]});*/
                 
                 this.pages["default"] = (await this.browser.pages())[0];
                 await this.page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36');

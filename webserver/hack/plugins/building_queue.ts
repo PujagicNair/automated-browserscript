@@ -26,6 +26,9 @@ const plugin: IPlugin = {
                         let queue = [];
                         for (let rowIndex of buildRows) {
                             let row: any = {};
+                            let key = rows[rowIndex - 1].match(/buildorder_([\w_]+)/);
+                            row.key = key && key[1];
+                            
                             let rowItems: string[] = await hack.browser.selectMultiple(`#buildqueue > tr:nth-of-type(${rowIndex}) > td.lit-item`, 'innerText');
                             for (let item of rowItems) {
                                 if (item.match(/\w+\n\w+/)) {
@@ -54,8 +57,9 @@ const plugin: IPlugin = {
                         }
                     } else {
                         str = '<tr><td>queue got never loaded</td></tr>';
+                        queue = [];
                     }
-                    return resolve({ success: false, get, str });
+                    return resolve({ success: false, get, str, queue });
                 }
             });
         }

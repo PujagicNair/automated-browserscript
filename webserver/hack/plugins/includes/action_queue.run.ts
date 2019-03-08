@@ -4,8 +4,11 @@ export = <IRunFunction>function(hack, storage, requires) {
     return new Promise(async resolve => {
         let nextTime = await storage.get('next', 0);
         let queue = await storage.get('queue', []);
+        let buildings = await storage.get('buildings', []);
         let build = requires['build'].build;
+        let troops = requires['troops'];
 
+        // handle queue if exists
         if (queue.length && (Date.now() > nextTime)) {
             let next = queue[0];
             await hack.gotoScreen(next.screen);
@@ -43,22 +46,39 @@ export = <IRunFunction>function(hack, storage, requires) {
                 } else {
                     queue = queue.slice(1);
                 }
+            } else if (next.screen == 'train') {
+                // train troops
             }
         }
         await storage.set('queue', queue);
+
+
+        // set diff / maxdiff
         let next = await storage.get('next', 0);
         let maxDiff = await storage.get('max-diff', 0);
-
         if (maxDiff && next > (Date.now() + maxDiff)) {
             await storage.set('next', Date.now() + maxDiff);
             next = Date.now() + maxDiff;
             await hack.browser.reload();
         }
-        let buildings = await storage.get('buildings', []);
 
+        // update buildings
+        if (hack.screen == 'main') {
+            let builds = (await requires.buildings.get()).data;
+            let bqueue = requires['building-queue'].queue || [];
+            builds.map(build => {
+                build.up = bqueue.filter(b => b.key == build.key).length;
+                build.queueUp = queue.filter(q => q.unit == build.key).length;
+                return build;
+            });
+            
+            await storage.set('buildings', builds);
+        }
+
+
+        // set client queue
         let wdStr: string;
         if (queue.length !== 0) {
-
             wdStr = `<div>next check: <b>${next ? new Date(next).toLocaleString() : 'immediately'}</b></div><br><table><tr><th>Bild</th><th>Name</th></tr>`;
             for (let entry of queue) {
                 let building = buildings.find(building => building.key == entry.unit) || {};

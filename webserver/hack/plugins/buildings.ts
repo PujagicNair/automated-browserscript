@@ -32,7 +32,7 @@ const plugin: IPlugin = {
                         data.push(set);
                     }
 
-                    end = { data, get, str: data.map(set =>
+                    end = { data, str: data.map(set =>
                         `<tr>
                             <td><img src="${set.img}"></td>
                             <td>${set.name}</td>
@@ -41,8 +41,9 @@ const plugin: IPlugin = {
                     }
                     await storage.set('last', end);
                 } else {
-                    end = await storage.get('last', { data: [], str: 'never loaded', get });
+                    end = await storage.get('last', { data: [], str: 'never loaded' });
                 }
+                end.get = get;
                 return resolve(end);
             });
         }
