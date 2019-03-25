@@ -2,20 +2,20 @@ import { IPlugin } from "../interfaces";
 
 
 const plugin: IPlugin = {
+    type: "util",
     name: 'buildings',
     tickrate: 6,
-    description: 'shows the levels of buildings you have',
+    description: 'loads the levels of buildings you have',
     requires: [],
     pluginSetup: {
         hasTicks: true,
         hasPage: false,
-        hasWidget: true
+        hasWidget: false
     },
-    widget: '<table>@str</table>',
     run: function(hack, storage) {
         function get() {
             return new Promise(async resolve => {
-                let end;
+                let end: any = { data: [] };
                 if (hack.screen == "main") {
                     let rows = await hack.browser.selectMultiple('[id^=main_buildrow]', 'id');
                     let data = [];
@@ -32,16 +32,10 @@ const plugin: IPlugin = {
                         data.push(set);
                     }
 
-                    end = { data, str: data.map(set =>
-                        `<tr>
-                            <td><img src="${set.img}"></td>
-                            <td>${set.name}</td>
-                            <td>${set.level}</td>
-                        </tr>`).join('\n')
-                    }
-                    await storage.set('last', end);
+                    end.data = data;
+                    await storage.set('last', data);
                 } else {
-                    end = await storage.get('last', { data: [], str: 'never loaded' });
+                    end.data = await storage.get('last', []);
                 }
                 end.get = get;
                 return resolve(end);

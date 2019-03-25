@@ -1,6 +1,7 @@
 import { IPlugin } from "../interfaces";
 
 const plugin: IPlugin = {
+    type: "plugin",
     tickrate: 1,
     name: 'recource-sync',
     description: 'See your recources realtime in the browser',

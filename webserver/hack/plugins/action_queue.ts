@@ -1,6 +1,7 @@
 import { IPlugin } from "../interfaces";
 
 const plugin: IPlugin = {
+    type: "plugin",
     tickrate: 12,
     name: 'action-queue',
     description: 'give the script a list of things it has todo',

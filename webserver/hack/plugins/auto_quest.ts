@@ -2,6 +2,7 @@ import { IPlugin } from "../interfaces";
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 const plugin: IPlugin = {
+    type: "util",
     tickrate: 30,
     name: 'auto-quest',
     description: 'Beendet Quests automatisch wenn sie abgeschlossen sind',
@@ -9,9 +10,8 @@ const plugin: IPlugin = {
     pluginSetup: {
         hasPage: false,
         hasTicks: true,
-        hasWidget: true
+        hasWidget: false
     },
-    widget: 'Es wurden bereits <b>@done</b> Quests abgeschlossen',
     run: function(hack, storage) {
         return new Promise(async resolve => {
             let done = await storage.get('done', 0);

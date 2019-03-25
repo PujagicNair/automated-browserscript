@@ -7,6 +7,7 @@ import loadPlugins from "./helpers/plugin_loader";
 import createSession from "./helpers/create_session";
 import multiVillages from "./helpers/multi_village";
 import util from './helpers/util';
+import loadExtensions from "./helpers/load_extensions";
 
 export class Hack {
 
@@ -37,7 +38,7 @@ export class Hack {
     private runpage = {};
     private holdPages = {};
 
-    private constructor(public config: IHackConfig, api: IApi, private socket: ISocket) {
+    private constructor(public config: IHackConfig, api: IApi, public socket: ISocket) {
         loadPlugins(this);
         
         // set output
@@ -238,12 +239,14 @@ export class Hack {
                     if (script.pluginSetup.hasTicks && this.connected) {
                         try {
                             let storage = getStorage(this.socket, plugin, village.id);
-                            let run = script.run(this, storage, providePluginsFor(tickdata[village.id], script.requires), util)
-                                .catch(err => console.log("tick threw", plugin, err));
-                            let time = sleep(15000, {});
+                            let extensions = await loadExtensions(this, plugin, village.id, tickdata);
+                            let requires = providePluginsFor(tickdata[village.id], script.requires);
+
+                            let run = script.run(this, storage, requires, util, extensions).catch(err => console.log("tick threw", plugin, err));
+                            let time = sleep(15000, 'failed');
                             let output = await Promise.race([ run, time ]);
     
-                            if (JSON.stringify(output) == '{}') {
+                            if (output == 'failed') {
                                 console.log('plugin tick timed out:', plugin);
                             }
                             data[plugin] = output;

@@ -2,6 +2,7 @@ import { IPlugin } from "../interfaces";
 
 
 const plugin: IPlugin = {
+    type: "plugin",
     name: 'train-troops',
     tickrate: 30,
     description: 'Automatically train troops including orders for building over time',

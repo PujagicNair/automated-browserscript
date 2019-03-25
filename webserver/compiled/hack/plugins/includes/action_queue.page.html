@@ -1,0 +1,55 @@
+<link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
+    crossorigin="anonymous">
+
+<style>
+    #success {
+        background-color: lightgreen;
+        color: darkgreen;
+    }
+
+    .title {
+        margin-top: 25px;
+        font-size: 1.6em;
+        font-weight: bold;
+        font-family: sans-serif;
+    }
+</style>
+
+<div class="content">
+    <h2>Action Queue</h2>
+
+    <div id="success"></div>
+
+    <div class="actions">
+        Nächste aktion: <span id="next">?</span>
+        <button id="force">Check erzwingen</button>
+    </div>
+
+    Maximale Check Differenz <input type="text" id="max-diff"> <button id="set-max-diff">Setzen</button>
+
+    <div class="title">Warteschlange</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Swap</th>
+                <th>Bild</th>
+                <th>Was</th>
+                <th>Del</th>
+            </tr>
+        </thead>
+        <tbody id="queue"></tbody>
+    </table>
+
+    <div class="title">Gebäude</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Bild</th>
+                <th>Name</th>
+                <th>Stufe</th>
+                <th>Verbessern</th>
+            </tr>
+        </thead>
+        <tbody id="buildings"></tbody>
+    </table>
+</div>

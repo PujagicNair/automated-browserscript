@@ -1,0 +1,30 @@
+<style>
+    #error {
+        color: darkred;
+        background-color: red;
+    }
+    #success {
+        color: darkgreen;
+        background-color: lightgreen;
+    }
+</style>
+<div id="error"></div>
+<div id="success"></div>
+<div id="holder">
+    <div id="pos">
+        <input id="x" type="text" placeholder="X" size="4" maxlength="4">
+        <input id="y" type="text" placeholder="Y" size="4" maxlength="4">
+    </div>
+    <div id="units"></div>
+    <div id="setup">
+        <input type="number" placeholder="how many times" id="times" value="1">
+        <input type="text" id="dateinput" placeholder="hh:mm:ss (empty = asap)"><br>
+        <input type="hidden" id="indate">
+    </div>
+    <div id="info">
+        <span id="datestr"></span>
+        <br>
+        <button id="send">Send</button>
+    </div>
+
+</div>

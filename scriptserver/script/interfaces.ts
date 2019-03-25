@@ -72,8 +72,13 @@ export interface ISocket {
     off(action: string, callback?: (data?: any) => void): void;
 }
 
+type IExtensionArg = { [name: string]: IExtension };
+type IExtension = (...args: any[]) => Promise<any>;
+
 export interface IPlugin {
-    run?(hack: Hack, storage: IStorage, requires: IPluginOutputMap, util: IUtil): Promise<IPluginOutput>;
+    type: "plugin" | "util" | "extension";
+    extends?: string;
+    run?(hack: Hack, storage: IStorage, requires: IPluginOutputMap, util: IUtil, extensions: IExtensionArg): Promise<IPluginOutput>;
     pre?(hack: Hack, storage: IStorage, requires: IPluginOutputMap, util: IUtil): Promise<void>;
     name: string;
     tickrate: number;

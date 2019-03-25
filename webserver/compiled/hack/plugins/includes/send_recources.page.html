@@ -1,0 +1,47 @@
+<link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
+<style>
+    #error {
+        color: darkred;
+        background-color: red;
+    }
+    #success {
+        color: darkgreen;
+        background-color: lightgreen;
+    }
+</style>
+<div id="error"></div>
+<div id="success"></div>
+
+<table>
+    <thead>
+        <tr>
+            <th>To</th>
+            <th>Wood</th>
+            <th>Stone</th>
+            <th>Iron</th>
+        </tr>
+    </thead>
+    <tbody id="orders"></tbody>
+</table>
+<div id="holder">
+    <div id="pos">
+        <input id="x" type="text" placeholder="X" size="4" maxlength="4">
+        <input id="y" type="text" placeholder="Y" size="4" maxlength="4">
+        <select id="villages" placeholder="your villages"></select>
+    </div>
+
+    <div id="recources">
+        <input id="wood" type="number" placeholder="amount wood">
+        <input id="stone" type="number" placeholder="amount stone">
+        <input id="iron" type="number" placeholder="amount iron">
+    </div>
+
+    <div id="settings">
+        Dauerauftrag? <input type="checkbox" id="forever" onchange="document.getElementById('every').disabled = !this.checked; this.value = this.checked"
+            value="false">
+        <input type="text" id="every" placeholder="hh:mm:ss" disabled>
+    </div>
+
+    <button id="send">Send</button>
+</div>

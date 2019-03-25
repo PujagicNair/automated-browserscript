@@ -1,6 +1,5 @@
 import * as puppeteer from 'puppeteer';
 
-
 export interface IApi {
     on(url: string, callback: IApiListenerCallback): void;
 }
@@ -27,11 +26,12 @@ export interface ISocket {
 type IInput = (callback: (data: any) => void) => void;
 type IOutput = (data: any) => void;
 type IServerRuntimeOutput = void | (() => void);
-export type IRunFunction = (hack: Hack, storage: IStorage, requires: IPluginOutputMap, util: IUtil) => Promise<IPluginOutput>;
+export type IRunFunction = (hack: Hack, storage: IStorage, requires: IPluginOutputMap, util: IUtil, extensions: IExtensionArg) => Promise<IPluginOutput>;
 export type IPreFunction = (hack: Hack, storage: IStorage, requires: IPluginOutputMap, util: IUtil) => Promise<void>;
 
 
 export interface IPlugin {
+    type: "plugin" | "util" | "extension";
     run?: IRunFunction | string;
     pre?: IPreFunction | string;
     name: string;
@@ -41,12 +41,16 @@ export interface IPlugin {
         hasPage: boolean;
         hasTicks: boolean;
     }
-    requires: string[];
+    extends?: string;
+    requires?: string[];
     page?: string;
     pageControl?: IPageControl | string;
     widget?: string;
     tickrate?: number;
 }
+
+type IExtensionArg = { [name: string]: IExtension };
+export type IExtension = (...args: any[]) => Promise<any>;
 
 export interface IPageControl {
     pauseTicks: boolean;

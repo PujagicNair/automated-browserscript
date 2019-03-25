@@ -2,6 +2,7 @@ import { IPlugin } from "../interfaces";
 
 
 const plugin: IPlugin = {
+    type: "TYPE" as any,
     name: 'plugin-name',
     tickrate: 10,
     description: 'description of the plugin',

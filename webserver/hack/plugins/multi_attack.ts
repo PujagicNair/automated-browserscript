@@ -2,6 +2,7 @@ import { IPlugin } from "../interfaces";
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 const plugin: IPlugin = {
+    type: "plugin",
     name: 'multi-attack',
     description: 'send multiple attacks with different speeds at the same time',
     pluginSetup: {

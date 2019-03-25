@@ -28,6 +28,7 @@ function send(browser: Browser, pos: { x: number, y: number }, recources: Recour
 }
 
 const plugin: IPlugin = {
+    type: "plugin",
     name: 'send-recources',
     tickrate: 10,
     description: 'automatically send recources to another village',

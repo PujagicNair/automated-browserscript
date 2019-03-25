@@ -108,6 +108,10 @@ export class TribalHackApi {
                 de163: {
                     map: "163",
                     serverUrl: "die-staemme.de"
+                },
+                de164: {
+                    map: "164",
+                    serverUrl: "die-staemme.de"
                 }
             }
             let wd = wordsMap[input.serverCode];
